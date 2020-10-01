@@ -1,0 +1,16 @@
+version: '3'
+services:
+  bot:
+    build: .
+    env_file: .envrc
+    environment:
+      SELENIUM_HOST: selenium
+    volumes:
+      - downloads:${DOWNLOADS_DIR}
+  selenium:
+    image: selenium/standalone-firefox:3.141.59-20200826
+    volumes:
+      - /dev/shm:/dev/shm
+      - downloads:${DOWNLOADS_DIR}
+volumes:
+  downloads:
