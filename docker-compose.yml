@@ -5,12 +5,13 @@ services:
     env_file: .envrc
     environment:
       SELENIUM_HOST: selenium
+      DOWNLOADS_DIR: /tmp/downloads
     volumes:
-      - downloads:${DOWNLOADS_DIR}
+      - downloads:/tmp/downloads
   selenium:
     image: selenium/standalone-firefox:3.141.59-20200826
     volumes:
       - /dev/shm:/dev/shm
-      - downloads:${DOWNLOADS_DIR}
+      - downloads:/home/seluser/Downloads
 volumes:
   downloads:

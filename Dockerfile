@@ -1,3 +1,4 @@
+# TODO: Python 3.9 when wheels for dependencies are built.
 FROM python:3.8-slim
 ENV APT_PKGS build-essential git libavcodec-dev libavformat-dev libfreetype6-dev libjpeg-dev libswscale-dev unzip zlib1g-dev
 RUN \
