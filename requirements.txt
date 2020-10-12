@@ -2,3 +2,4 @@ osuapi==0.0.42
 praw==7.1.0
 requests==2.24
 selenium==3.141.0
+tenacity==6.2.0

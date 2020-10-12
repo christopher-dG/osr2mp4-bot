@@ -10,6 +10,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from selenium.webdriver.support.ui import WebDriverWait
+from tenacity import retry, stop_after_attempt
 
 DOWNLOADS = Path(os.environ["DOWNLOADS_DIR"])
 
@@ -51,6 +52,7 @@ def _download(f):
     return wrapped
 
 
+@retry(stop=stop_after_attempt(3))
 @_download
 def _download_beatmap(beatmap: int) -> Path:
     with _login() as ff:
@@ -69,6 +71,7 @@ def download_beatmap(beatmap: int) -> Path:
     return Path(path)
 
 
+@retry(stop=stop_after_attempt(3))
 @_download
 def download_replay(score: int) -> Path:
     """Download a replay."""
