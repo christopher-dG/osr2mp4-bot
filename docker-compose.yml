@@ -2,6 +2,7 @@ version: '3'
 services:
   bot:
     build: .
+    restart: unless-stopped
     env_file: .envrc
     environment:
       SELENIUM_HOST: selenium
@@ -10,6 +11,7 @@ services:
       - downloads:/tmp/downloads
   selenium:
     image: selenium/standalone-firefox:3.141.59-20200826
+    restart: unless-stopped
     volumes:
       - /dev/shm:/dev/shm
       - downloads:/home/seluser/Downloads
