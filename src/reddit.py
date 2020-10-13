@@ -53,7 +53,10 @@ def _score_id(beatmap: int, player: int, mods: int) -> int:
     scores = OSU_API.get_scores(beatmap, username=player, mods=OsuMod(mods))
     if not scores:
         raise KnownFailure("Sorry, I couldn't find the replay.")
-    return scores[0].score_id
+    score = scores[0]
+    if not score.replay_available:
+        raise KnownFailure("Sorry, the replay is not available for download.")
+    return score.score_id
 
 
 def _get_replay(beatmap: int, player: int, mods: int) -> Path:
