@@ -76,6 +76,11 @@ def _parse_mods(mods: str) -> int:
 
 
 def _parse_osubot_comment(body) -> Tuple[int, int, int]:
+    # Bail if the replay has already been recorded.
+    if "https://streamable.com" in body:
+        raise KnownFailure(
+            "This score has already been recorded, see the stickied comment."
+        )
     lines = body.splitlines()
     # Beatmap info is always the first line (if the beatmap was found).
     beatmap_info = lines[0]
