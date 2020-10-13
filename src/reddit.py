@@ -73,8 +73,6 @@ def _parse_mods(mods: str) -> int:
 
 
 def _parse_osubot_comment(body) -> Tuple[int, int, int]:
-    if "osu!standard" not in body:
-        raise KnownFailure("Sorry, I can only record osu!standard plays.")
     lines = body.splitlines()
     # Beatmap info is always the first line (if the beatmap was found).
     beatmap_info = lines[0]
@@ -82,6 +80,8 @@ def _parse_osubot_comment(body) -> Tuple[int, int, int]:
     if not match:
         raise KnownFailure("Sorry, I couldn't find the beatmap.")
     beatmap = int(match[1])
+    if "osu!standard" not in beatmap_info:
+        raise KnownFailure("Sorry, I can only record osu!standard plays.")
     # Player info line depends on if there was a mod line.
     player_info = " ".join(lines[9:11])
     match = re.search(RE_PLAYER, player_info)
