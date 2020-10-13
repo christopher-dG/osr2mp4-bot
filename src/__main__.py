@@ -1,7 +1,5 @@
 import logging
 
-from traceback import print_exc
-
 from .osu import download_beatmap, download_replay
 from .reddit import failure, finished, parse_item, stream, success
 from .recorder import record
@@ -29,8 +27,7 @@ def process_item(item):
         logging.info(f"Video uploaded to {url}")
         success(item, url)
     except Exception as e:
-        logging.info("Something failed...")
-        print_exc()
+        logging.exception("Something failed...")
         failure(item, e)
     finally:
         finished(item)
