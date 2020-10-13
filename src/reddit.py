@@ -2,7 +2,6 @@ import os
 import re
 
 from pathlib import Path
-from traceback import print_exc
 from typing import Tuple
 
 from osuapi import OsuApi, OsuMod, ReqConnector
@@ -102,10 +101,10 @@ def success(item, url: str):
 
 def failure(item, e: Exception):
     if isinstance(e, KnownFailure):
-        item.reply(e.args[0])
+        msg = e.args[0]
     else:
-        item.reply("Sorry, something unexpected went wrong.")
-        print_exc()
+        msg = "Sorry, something unexpected went wrong."
+    item.reply(msg)
 
 
 def finished(item):
