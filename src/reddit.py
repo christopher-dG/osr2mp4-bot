@@ -88,7 +88,7 @@ def _parse_osubot_comment(body) -> Tuple[int, int, int]:
     if not match:
         raise KnownFailure("Sorry, I couldn't find the beatmap.")
     beatmap = int(match[1])
-    if "osu!standard" not in beatmap_info:
+    if "osu!standard" not in " ".join(lines[:2]):
         raise KnownFailure("Sorry, I can only record osu!standard plays.")
     # Player info line depends on if there was a mod line.
     player_info = " ".join(lines[9:11])
