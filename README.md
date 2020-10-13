@@ -21,12 +21,10 @@ Environment variables that need to be set in `.envrc`:
 - `OSU_SKIN_PATH` (automatic in Docker)
 - `STREAMABLE_USERNAME`
 - `STREAMABLE_PASSWORD`
-- `DOWNLOADS_DIR` (automatic in Docker Compose)
 
 Running:
 
 ```sh
-docker-compose build
-docker-compose up -d
-sudo chown 1200:root "$(docker volume inspect osr2mp4-bot_downloads -f '{{ .Mountpoint }}')"
+docker build -t osr2mp4-bot .
+docker run -d --name osr2mp4-bot --restart=unless-stopped --env-file=.envrc osr2mp4-bot
 ```

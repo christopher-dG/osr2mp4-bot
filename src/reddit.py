@@ -1,13 +1,12 @@
 import os
 import re
 
-from pathlib import Path
 from typing import Tuple
 
 from osuapi import OsuApi, OsuMod, ReqConnector
 from praw import Reddit
 
-from . import KnownFailure, osu
+from . import KnownFailure
 
 BOT = Reddit(
     client_id=os.environ["REDDIT_CLIENT_ID"],
@@ -17,6 +16,7 @@ BOT = Reddit(
     user_agent=os.environ["REDDIT_USER_AGENT"],
 )
 OSU_API = OsuApi(os.environ["OSU_API_KEY"], connector=ReqConnector())
+RE_MAPSET = re.compile(r"osu\.ppy\.sh/d/(\d+)")
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")
 RE_PLAYER = re.compile(r"osu\.ppy\.sh/u/(\d+)")
 RE_MODS = re.compile(r"\|\s+\+([A-Z]+)")
@@ -59,11 +59,6 @@ def _score_id(beatmap: int, player: int, mods: int) -> int:
     return score.score_id
 
 
-def _get_replay(beatmap: int, player: int, mods: int) -> Path:
-    score = _score_id(beatmap, player, mods)
-    return osu.download_replay(score)
-
-
 def _find_osubot_comment(item):
     for comment in item.submission.comments:
         if comment.author.name == "osu-bot":
@@ -75,7 +70,7 @@ def _parse_mods(mods: str) -> int:
     return sum(MODS[mods[i : i + 2]] for i in range(0, len(mods), 2))
 
 
-def _parse_osubot_comment(body) -> Tuple[int, int, int]:
+def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
     # Bail if the replay has already been recorded.
     if "https://streamable.com" in body:
         raise KnownFailure(
@@ -84,6 +79,10 @@ def _parse_osubot_comment(body) -> Tuple[int, int, int]:
     lines = body.splitlines()
     # Beatmap info is always the first line (if the beatmap was found).
     beatmap_info = lines[0]
+    match = re.search(RE_MAPSET, beatmap_info)
+    if not match:
+        raise KnownFailure("Sorry, I couldn't find the mapset.")
+    mapset = int(match[1])
     match = re.search(RE_BEATMAP, beatmap_info)
     if not match:
         raise KnownFailure("Sorry, I couldn't find the beatmap.")
@@ -100,7 +99,7 @@ def _parse_osubot_comment(body) -> Tuple[int, int, int]:
     mods_info = lines[6]
     match = re.search(RE_MODS, mods_info)
     mods = _parse_mods(match[1]) if match else 0
-    return beatmap, player, mods
+    return mapset, beatmap, player, mods
 
 
 def _edit_osubot_comment(item, url: str) -> None:
@@ -129,10 +128,10 @@ def finished(item) -> None:
 
 def parse_item(item) -> Tuple[int, int, str]:
     comment = _find_osubot_comment(item)
-    beatmap, player, mods = _parse_osubot_comment(comment.body)
+    mapset, beatmap, player, mods = _parse_osubot_comment(comment.body)
     score = _score_id(beatmap, player, mods)
     title = item.submission.title
-    return beatmap, score, title
+    return mapset, score, title
 
 
 def stream():

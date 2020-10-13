@@ -8,12 +8,12 @@ from tempfile import mkstemp
 from osr2mp4.osr2mp4 import Osr2mp4
 
 
-def record(beatmap: Path, replay: Path, delete: bool = True) -> Path:
+def record(mapset: Path, replay: Path, delete: bool = True) -> Path:
     _, output = mkstemp(suffix=".mp4")
     data = {
         "osu! path": "/",
         "Skin path": os.environ["OSU_SKIN_PATH"],
-        "Beatmap path": beatmap.as_posix(),
+        "Beatmap path": mapset.as_posix(),
         ".osr path": replay.as_posix(),
         "Default skin path": os.environ["OSU_SKIN_PATH"],
         "Output path": output,
@@ -40,6 +40,6 @@ def record(beatmap: Path, replay: Path, delete: bool = True) -> Path:
     osr.joinall()
     osr.cleanup()
     if delete:
-        rmtree(beatmap)
+        rmtree(mapset)
         replay.unlink()
     return Path(output)
