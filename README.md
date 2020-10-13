@@ -1,14 +1,14 @@
 # osr2mp4-bot
 
-process:
+A Reddit bot that records and uploads videos of osu! replays.
+See [/u/osu-bot](https://reddit.com/u/osu-bot).
+This is just a thin wrapper around [osr2mp4](https://github.com/uyitroa/osr2mp4-core), all credit belongs there.
 
-- Look up beatmap + player (use existing osu-bot comment for shortcut)
-- download beatmap + replay
-- produce video
-- upload to streamable with S3 URL
-- delete video from disk
+To use it, comment `/u/osu-bot record` on a score post.
 
-environment variables:
+### Dev Notes
+
+Environment variables that need to be set in `.envrc`:
 
 - `REDDIT_CLIENT_ID`
 - `REDDIT_CLIENT_SECRET`
@@ -23,7 +23,10 @@ environment variables:
 - `STREAMABLE_PASSWORD`
 - `DOWNLOADS_DIR` (automatic in Docker Compose)
 
-gotchas:
+Running:
 
-- when the download dir is bind mounted, it's owned by `root` and so `seluser` can't write to it.
-  gotta fix that manually with a `sudo chown 1200:root "$(docker volume inspect osr2mp4-bot_downloads -f '{{ .Mountpoint }}')"`
+```sh
+docker-compose build
+docker-compose up -d
+sudo chown 1200:root "$(docker volume inspect osr2mp4-bot_downloads -f '{{ .Mountpoint }}')"
+```
