@@ -95,11 +95,19 @@ def _parse_osubot_comment(body) -> Tuple[int, int, int]:
     return beatmap, player, mods
 
 
-def success(item, url: str):
+def _edit_osubot_comment(item, url: str) -> None:
+    comment = _find_osubot_comment(item)
+    lines = comment.body.splitlines()
+    lines.insert(lines.index("***"), f"[Streamable replay]({url})\n")
+    comment.edit("\n".join(lines))
+
+
+def success(item, url: str) -> None:
     item.reply(f"Here you go: {url}")
+    _edit_osubot_comment(item, url)
 
 
-def failure(item, e: Exception):
+def failure(item, e: Exception) -> None:
     if isinstance(e, KnownFailure):
         msg = e.args[0]
     else:
@@ -107,7 +115,7 @@ def failure(item, e: Exception):
     item.reply(msg)
 
 
-def finished(item):
+def finished(item) -> None:
     item.save()
 
 
