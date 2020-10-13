@@ -46,7 +46,7 @@ def _should_process(item):
     comment = BOT.comment(item.id)
     if comment.saved:
         return False
-    return f"/u/{os.environ['REDDIT_USERNAME']} record" in comment.body
+    return f"u/{os.environ['REDDIT_USERNAME']} record" in comment.body
 
 
 def _score_id(beatmap: int, player: int, mods: int) -> int:
