@@ -1,4 +1,5 @@
 import os
+import sys
 
 from pathlib import Path
 from tempfile import mkstemp
@@ -31,7 +32,9 @@ def record(beatmap: Path, replay: Path) -> Path:
         "Use FFmpeg video writer": True,
         "api key": "",
     }
+    hook = sys.excepthook
     osr = Osr2mp4(data, settings)
+    sys.excepthook = hook
     osr.startall()
     osr.joinall()
     return Path(output)
