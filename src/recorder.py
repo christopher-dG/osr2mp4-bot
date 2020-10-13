@@ -2,12 +2,13 @@ import os
 import sys
 
 from pathlib import Path
+from shutil import rmtree
 from tempfile import mkstemp
 
 from osr2mp4.osr2mp4 import Osr2mp4
 
 
-def record(beatmap: Path, replay: Path) -> Path:
+def record(beatmap: Path, replay: Path, delete: bool = True) -> Path:
     _, output = mkstemp(suffix=".mp4")
     data = {
         "osu! path": "/",
@@ -37,4 +38,8 @@ def record(beatmap: Path, replay: Path) -> Path:
     sys.excepthook = hook
     osr.startall()
     osr.joinall()
+    osr.cleanup()
+    if delete:
+        rmtree(beatmap)
+        replay.unlink()
     return Path(output)
