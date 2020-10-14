@@ -12,7 +12,7 @@ services:
     image: redis:6
     restart: unless-stopped
     ports:
-      - 6397:6397
+      - 6379:6379
     volumes:
       - /etc/redis:/usr/local/etc/redis
     command: /usr/local/etc/redis/redis.conf
