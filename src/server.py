@@ -25,7 +25,7 @@ QUEUE = Queue(connection=REDIS)
 
 def _stream():
     for item in REDDIT.inbox.stream():
-        if item.subject != "username mention":
+        if item.subject not in ("comment reply", "username mention"):
             continue
         comment = REDDIT.comment(item.id)
         if comment.saved:
