@@ -1,7 +1,7 @@
 import os
 import re
 
-from typing import Tuple
+from typing import List, Tuple
 
 from osuapi import OsuApi, OsuMod, ReqConnector
 from praw.models import Comment
@@ -12,6 +12,7 @@ OSU_API = OsuApi(os.environ["OSU_API_KEY"], connector=ReqConnector())
 RE_MAPSET = re.compile(r"osu\.ppy\.sh/d/(\d+)")
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")
 RE_PLAYER = re.compile(r"osu\.ppy\.sh/u/(\d+)")
+RE_LENGTH = re.compile(r"([\d:]{2,5}:\d{2})")
 RE_MODS = re.compile(r"\|\s+\+([A-Z]+)")
 MODS = {
     "NF": 1 << 0,
@@ -66,39 +67,68 @@ def _find_osubot_comment(item: Comment) -> Comment:
 
 
 def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
-    # Bail if the replay has already been recorded.
-    if "https://streamable.com" in body:
-        raise KnownFailure(
-            "This score has already been recorded, see the stickied comment."
-        )
     lines = body.splitlines()
-    # Beatmap info is always the first line (if the beatmap was found).
-    beatmap_info = lines[0]
-    match = re.search(RE_MAPSET, beatmap_info)
-    if not match:
-        raise KnownFailure("Sorry, I couldn't find the mapset.")
-    mapset = int(match[1])
-    match = re.search(RE_BEATMAP, beatmap_info)
-    if not match:
-        raise KnownFailure("Sorry, I couldn't find the beatmap.")
-    beatmap = int(match[1])
-    if "osu!standard" not in " ".join(lines[:2]):
-        raise KnownFailure("Sorry, I can only record osu!standard plays.")
-    # Player info line depends on if there was a mod line.
-    player_info = " ".join(lines[9:11])
-    match = re.search(RE_PLAYER, player_info)
-    if not match:
-        raise KnownFailure("Sorry, I couldn't find the player.")
-    player = int(match[1])
-    # Mods line might not exist, in that case it's nomod.
-    mods_info = lines[6]
-    match = re.search(RE_MODS, mods_info)
-    mods = _parse_mods(match[1]) if match else 0
+    mapset = _parse_mapset(lines)
+    beatmap = _parse_beatmap(lines)
+    player = _parse_player(lines)
+    mods = _parse_mods(lines)
+    _check_replay_already_recorded(lines)
+    _check_unranked(lines)
+    _check_standard(lines)
+    _check_length(lines)
     return mapset, beatmap, player, mods
 
 
-def _parse_mods(mods: str) -> int:
+def _parse_mapset(lines: List[str]) -> int:
+    match = RE_MAPSET.search(lines[0])
+    if not match:
+        raise KnownFailure("Sorry, I couldn't find the mapset.")
+    return int(match[1])
+
+
+def _parse_beatmap(lines: List[str]) -> int:
+    match = re.search(RE_BEATMAP, lines[0])
+    if not match:
+        raise KnownFailure("Sorry, I couldn't find the beatmap.")
+    return int(match[1])
+
+
+def _parse_player(lines: List[str]) -> int:
+    match = RE_PLAYER.search(" ".join(lines[9:11]))
+    if not match:
+        raise KnownFailure("Sorry, I couldn't find the player.")
+    return int(match[1])
+
+
+def _parse_mods(lines: List[str]) -> int:
+    match = RE_MODS.search(lines[6])
+    mods = match[1] if match else ""
     return sum(MODS[mods[i : i + 2]] for i in range(0, len(mods), 2))
+
+
+def _check_replay_already_recorded(lines: List[str]) -> None:
+    if "https://streamable.com" in " ".join(lines):
+        raise KnownFailure(
+            "This score has already been recorded, see the stickied comment."
+        )
+
+
+def _check_unranked(lines: List[str]) -> None:
+    if "Unranked" in lines[1]:
+        raise KnownFailure("Sorry, I can't record replays for unranked maps.")
+
+
+def _check_standard(lines: List[str]) -> None:
+    if "osu!standard" not in lines[0]:
+        raise KnownFailure("Sorry, I can only record osu!standard plays.")
+
+
+def _check_length(lines: List[str]) -> None:
+    match = RE_LENGTH.findall(" ".join(lines[5:7]))
+    if match:
+        length = match[-1]
+        if length.count(":") == 2 or int(length[:2]) >= 10:
+            raise KnownFailure("Sorry, I can't record replays longer than 10 minutes.")
 
 
 def _score_id(beatmap: int, player: int, mods: int) -> int:
