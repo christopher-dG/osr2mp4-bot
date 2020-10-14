@@ -29,11 +29,12 @@ def record(mapset: Path, replay: Path) -> Path:
         "ffmpeg path": "ffmpeg",
     }
     settings = {
-        "Show scoreboard": False,
+        "Global leaderboard": True,
         "Song volume": 100,
         "Effect volume": 100,
         "Use FFmpeg video writer": True,
-        "api key": "",
+        "Enable PP counter": True,
+        "api key": os.environ["OSU_API_KEY"],
     }
     hook = sys.excepthook
     osr = Osr2mp4(data, settings)
