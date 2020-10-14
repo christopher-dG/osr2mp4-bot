@@ -1,8 +1,8 @@
 import os
 
-import requests
-
 from pathlib import Path
+
+import requests
 
 
 def upload(video: Path, title: str) -> str:
