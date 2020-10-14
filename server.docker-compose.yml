@@ -1,0 +1,18 @@
+version: '3'
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    restart: unless-stopped
+    env_file: .envrc
+    environment:
+      REDIS_HOST: redis
+  redis:
+    image: redis:6
+    restart: unless-stopped
+    ports:
+      - 6397:6397
+    volumes:
+      - /etc/redis:/usr/local/etc/redis
+    command: /usr/local/etc/redis/redis.conf

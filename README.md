@@ -24,18 +24,17 @@ Environment variables that need to be set in `.envrc`:
 - `REDIS_HOST`
 - `REDIS_AUTH`
 
-Running the server:
+Running the server (requires a `/etc/redis/redis.conf` to be readable by `999`, and to have `requirepass $REDIS_AUTH`):
 
 ```sh
-docker build -f server.Dockerfile -t osr2mp4-server .
-docker run -d --name osr2mp4-server --restart=unless-stopped --env-file=.envrc osr2mp4-server
+docker-compose -f server.docker-compose.yml build
+docker-compose -f server.docker-compose.yml up -d
 ```
 
 Running the worker (as many as you want):
 
 ```sh
-docker build -f worker.Dockerfile -t osr2mp4-worker .
-docker run -d --name osr2mp4-worker --restart=unless-stopped --env-file=.envrc osr2mp4-worker
-```
 
-Also make sure you have Redis running somewhere.
+docker-compose -f worker.docker-compose.yml build
+docker-compose -f worker.docker-compose.yml up -d --scale worker=8
+```

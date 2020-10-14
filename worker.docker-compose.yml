@@ -1,0 +1,8 @@
+version: '3'
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: worker.Dockerfile
+    restart: unless-stopped
+    env_file: .envrc
