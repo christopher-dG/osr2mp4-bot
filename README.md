@@ -21,10 +21,21 @@ Environment variables that need to be set in `.envrc`:
 - `OSU_SKIN_PATH` (automatic in Docker)
 - `STREAMABLE_USERNAME`
 - `STREAMABLE_PASSWORD`
+- `REDIS_HOST`
+- `REDIS_AUTH`
 
-Running:
+Running the server:
 
 ```sh
-docker build -t osr2mp4-bot .
-docker run -d --name osr2mp4-bot --restart=unless-stopped --env-file=.envrc osr2mp4-bot
+docker build -f server.Dockerfile -t osr2mp4-server .
+docker run -d --name osr2mp4-server --restart=unless-stopped --env-file=.envrc osr2mp4-server
 ```
+
+Running the worker (as many as you want):
+
+```sh
+docker build -f worker.Dockerfile -t osr2mp4-worker .
+docker run -d --name osr2mp4-worker --restart=unless-stopped --env-file=.envrc osr2mp4-worker
+```
+
+Also make sure you have Redis running somewhere.

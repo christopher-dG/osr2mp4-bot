@@ -1,4 +1,3 @@
-# TODO: Python 3.9 when wheels for dependencies are built.
 FROM python:3.8-slim
 ENV APT_PKGS build-essential git libavcodec-dev libavformat-dev libfreetype6-dev libjpeg-dev libswscale-dev unzip zlib1g-dev
 RUN \
@@ -24,4 +23,5 @@ RUN \
   rm -rf /tmp/*
 ENV PYTHONPATH /root
 COPY src/ /root/bot
-CMD python -m bot
+WORKDIR /root
+CMD rq worker -u redis://:${REDIS_AUTH}@${REDIS_HOST:-localhost}:${REDIS_PORT:-6379}/${REDIS_DB:-0}
