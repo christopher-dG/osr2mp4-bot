@@ -37,4 +37,4 @@ def _stream():
 
 def main():
     for item in _stream():
-        QUEUE.enqueue(job, item)
+        QUEUE.enqueue(job, item, job_timeout=900)
