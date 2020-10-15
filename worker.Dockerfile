@@ -1,5 +1,5 @@
 FROM python:3.8-slim
-ENV APT_PKGS build-essential git libavcodec-dev libavformat-dev libfreetype6-dev libjpeg-dev libswscale-dev unzip zlib1g-dev
+ENV APT_PKGS build-essential git libfreetype6-dev libjpeg-dev unzip zlib1g-dev
 RUN \
   apt-get update && \
   apt-get -y install ${APT_PKGS} ffmpeg && \
@@ -8,8 +8,6 @@ RUN \
   cd /tmp/osr2mp4-core/osr2mp4 && \
   python install.py && \
   cd ImageProcess/Curves/libcurves && \
-  python setup.py build_ext --inplace && \
-  cd ../../../VideoProcess/FFmpegWriter && \
   python setup.py build_ext --inplace && \
   mv /tmp/osr2mp4-core/osr2mp4 /root/osr2mp4
 COPY assets/skin.osk /tmp/skin.osk

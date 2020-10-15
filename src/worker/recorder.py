@@ -32,7 +32,6 @@ def record(mapset: Path, replay: Path) -> Path:
         "Global leaderboard": True,
         "Song volume": 100,
         "Effect volume": 100,
-        "Use FFmpeg video writer": True,
         "Enable PP counter": True,
         "api key": os.environ["OSU_API_KEY"],
     }
