@@ -14,13 +14,7 @@ REDDIT = Reddit(
     password=os.environ["REDDIT_PASSWORD"],
     user_agent=os.environ["REDDIT_USER_AGENT"],
 )
-REDIS = Redis(
-    host=os.getenv("REDIS_HOST", "localhost"),
-    port=int(os.getenv("REDIS_PORT", "6379")),
-    db=int(os.getenv("REDIS_DB", "0")),
-    password=os.getenv("REDIS_AUTH"),
-)
-QUEUE = Queue(connection=REDIS)
+QUEUE = Queue(connection=Redis(os.getenv("REDIS_HOST", "localhost")))
 
 
 def _stream():

@@ -1,0 +1,17 @@
+version: '3'
+services:
+  server:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: python -m bot
+    environment:
+      REDIS_HOST: redis
+  worker:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: rq worker -u redis://redis
+  redis:
+    image: redis:6
+    restart: unless-stopped

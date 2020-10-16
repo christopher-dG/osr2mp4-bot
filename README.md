@@ -8,7 +8,7 @@ To use it, comment `/u/osu-bot record` on a score post.
 
 ### Dev Notes
 
-Environment variables that need to be set in `.envrc`:
+Environment variables that need to be set in `.env`:
 
 - `REDDIT_CLIENT_ID`
 - `REDDIT_CLIENT_SECRET`
@@ -18,23 +18,10 @@ Environment variables that need to be set in `.envrc`:
 - `OSU_API_KEY`
 - `OSU_USERNAME`
 - `OSU_PASSWORD`
-- `OSU_SKIN_PATH` (automatic in Docker)
 - `STREAMABLE_USERNAME`
 - `STREAMABLE_PASSWORD`
-- `REDIS_HOST`
-- `REDIS_AUTH`
-
-Running the server (requires a `/etc/redis/redis.conf` to be readable by `999`, and to have `requirepass $REDIS_AUTH`):
 
 ```sh
-docker-compose -f server.docker-compose.yml build
-docker-compose -f server.docker-compose.yml up -d
-```
-
-Running the worker (as many as you want):
-
-```sh
-
-docker-compose -f worker.docker-compose.yml build
-docker-compose -f worker.docker-compose.yml up -d --scale worker=8
+docker-compose build
+docker-compose up -d --scale worker=8
 ```
