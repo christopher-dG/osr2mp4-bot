@@ -1,6 +1,9 @@
 import os
 
+from typing import Iterable
+
 from praw import Reddit
+from praw.models import Comment
 from redis import Redis
 from rq import Queue
 
@@ -14,10 +17,12 @@ REDDIT = Reddit(
     password=os.environ["REDDIT_PASSWORD"],
     user_agent=os.environ["REDDIT_USER_AGENT"],
 )
-QUEUE = Queue(connection=Redis(os.getenv("REDIS_HOST", "localhost")))
+QUEUE = Queue(
+    connection=Redis(os.getenv("REDIS_HOST", "localhost")), default_timeout=900
+)
 
 
-def _stream():
+def _stream() -> Iterable[Comment]:
     for item in REDDIT.inbox.stream():
         if item.subject not in ("comment reply", "username mention"):
             continue
@@ -29,6 +34,6 @@ def _stream():
         yield item
 
 
-def main():
+def main() -> None:
     for item in _stream():
-        QUEUE.enqueue(job, item, job_timeout=900)
+        QUEUE.enqueue(job, item)

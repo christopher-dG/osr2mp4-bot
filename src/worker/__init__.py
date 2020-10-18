@@ -8,10 +8,10 @@ class ReplyWith(Exception):
         self.msg = msg
 
 
-from .osu import download_mapset, download_replay
-from .recorder import record
-from .reddit import failure, finished, parse_item, success
-from .streamable import upload
+from .osu import download_mapset, download_replay  # noqa: E402
+from .recorder import record  # noqa: E402
+from .reddit import failure, finished, parse_item, success  # noqa: E402
+from .streamable import upload  # noqa: E402
 
 
 def job(item: Comment) -> None:

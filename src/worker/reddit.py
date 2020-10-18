@@ -1,7 +1,7 @@
 import os
 import re
 
-from typing import List, Tuple
+from typing import List, Tuple, cast
 
 from osuapi import OsuApi, OsuMod, ReqConnector
 from praw.models import Comment
@@ -99,7 +99,7 @@ def _parse_player(lines: List[str]) -> int:
 def _parse_mods(lines: List[str]) -> int:
     match = RE_MODS.search(lines[6])
     mods = match[1] if match else ""
-    return sum(MODS[mods[i : i + 2]] for i in range(0, len(mods), 2))
+    return sum(MODS[mods[i : i + 2]] for i in range(0, len(mods), 2))  # noqa: E203
 
 
 def _check_replay_already_recorded(lines: List[str]) -> None:
@@ -134,7 +134,7 @@ def _score_id(beatmap: int, player: int, mods: int) -> int:
     score = scores[0]
     if not score.replay_available:
         raise ReplyWith("Sorry, the replay is not available for download.")
-    return score.score_id
+    return cast(int, score.score_id)
 
 
 def _edit_osubot_comment(item: Comment, url: str) -> None:

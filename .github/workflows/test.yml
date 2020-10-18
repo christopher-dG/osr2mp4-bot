@@ -1,0 +1,14 @@
+name: Run Tests
+on:
+  - push
+  - pull_request
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - run: pip install -r requirements.txt black flake8 mypy pytest-cov
+      - run: ./test.sh
