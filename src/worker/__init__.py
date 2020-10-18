@@ -3,8 +3,9 @@ import logging
 from praw.models import Comment
 
 
-class KnownFailure(Exception):
-    pass
+class ReplyWith(Exception):
+    def __init__(self, msg: str) -> None:
+        self.msg = msg
 
 
 from .osu import download_mapset, download_replay
@@ -34,8 +35,10 @@ def job(item: Comment) -> None:
         video_url = upload(video_path, title)
         logging.info(f"Video uploaded to {video_url}")
         success(item, video_url)
-    except Exception as e:
+    except ReplyWith as e:
+        item.reply(e.args[0])
+    except Exception:
         logging.exception("Something failed...")
-        failure(item, e)
+        failure(item)
     finally:
         finished(item)

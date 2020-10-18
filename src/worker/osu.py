@@ -7,6 +7,8 @@ from zipfile import ZipFile
 
 from requests import Session
 
+from . import ReplyWith
+
 
 def download_mapset(mapset: int) -> Path:
     content = _download(f"https://osu.ppy.sh/beatmapsets/{mapset}")
@@ -28,7 +30,7 @@ def _download(url: str) -> bytes:
     with _login() as sess:
         resp = sess.get(f"{url}/download", headers={"Referer": url})
     if not resp.ok:
-        raise KnownFailure("Sorry, a download failed.")
+        raise ReplyWith("Sorry, a download failed.")
     return resp.content
 
 
@@ -44,4 +46,4 @@ def _login() -> Session:
     resp = sess.post(url, data=data, headers={"Referer": url}, allow_redirects=False)
     if resp.status_code == 302:
         return sess
-    raise KnownFailure("Sorry, I couldn't log into osu!web.")
+    raise ReplyWith("Sorry, I couldn't log into osu!web.")

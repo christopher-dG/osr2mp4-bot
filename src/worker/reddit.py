@@ -6,7 +6,7 @@ from typing import List, Tuple
 from osuapi import OsuApi, OsuMod, ReqConnector
 from praw.models import Comment
 
-from . import KnownFailure
+from . import ReplyWith
 
 OSU_API = OsuApi(os.environ["OSU_API_KEY"], connector=ReqConnector())
 RE_MAPSET = re.compile(r"osu\.ppy\.sh/d/(\d+)")
@@ -47,12 +47,8 @@ def success(item: Comment, url: str) -> None:
     _edit_osubot_comment(item, url)
 
 
-def failure(item: Comment, e: Exception) -> None:
-    if isinstance(e, KnownFailure):
-        msg = e.args[0]
-    else:
-        msg = "Sorry, something unexpected went wrong."
-    item.reply(msg)
+def failure(item: Comment) -> None:
+    item.reply("Sorry, something unexpected went wrong.")
 
 
 def finished(item: Comment) -> None:
@@ -63,7 +59,7 @@ def _find_osubot_comment(item: Comment) -> Comment:
     for comment in item.submission.comments:
         if comment.author.name == "osu-bot":
             return comment
-    raise KnownFailure("Sorry, I couldn't find a /u/osu-bot comment to use.")
+    raise ReplyWith("Sorry, I couldn't find a /u/osu-bot comment to use.")
 
 
 def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
@@ -82,21 +78,21 @@ def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
 def _parse_mapset(lines: List[str]) -> int:
     match = RE_MAPSET.search(lines[0])
     if not match:
-        raise KnownFailure("Sorry, I couldn't find the mapset.")
+        raise ReplyWith("Sorry, I couldn't find the mapset.")
     return int(match[1])
 
 
 def _parse_beatmap(lines: List[str]) -> int:
     match = re.search(RE_BEATMAP, lines[0])
     if not match:
-        raise KnownFailure("Sorry, I couldn't find the beatmap.")
+        raise ReplyWith("Sorry, I couldn't find the beatmap.")
     return int(match[1])
 
 
 def _parse_player(lines: List[str]) -> int:
     match = RE_PLAYER.search(" ".join(lines[9:11]))
     if not match:
-        raise KnownFailure("Sorry, I couldn't find the player.")
+        raise ReplyWith("Sorry, I couldn't find the player.")
     return int(match[1])
 
 
@@ -108,19 +104,19 @@ def _parse_mods(lines: List[str]) -> int:
 
 def _check_replay_already_recorded(lines: List[str]) -> None:
     if "https://streamable.com" in " ".join(lines):
-        raise KnownFailure(
+        raise ReplyWith(
             "This score has already been recorded, see the stickied comment."
         )
 
 
 def _check_unranked(lines: List[str]) -> None:
     if "Unranked" in lines[1]:
-        raise KnownFailure("Sorry, I can't record replays for unranked maps.")
+        raise ReplyWith("Sorry, I can't record replays for unranked maps.")
 
 
 def _check_standard(lines: List[str]) -> None:
     if "osu!standard" not in lines[0]:
-        raise KnownFailure("Sorry, I can only record osu!standard plays.")
+        raise ReplyWith("Sorry, I can only record osu!standard plays.")
 
 
 def _check_length(lines: List[str]) -> None:
@@ -128,16 +124,16 @@ def _check_length(lines: List[str]) -> None:
     if match:
         length = match[-1]
         if length.count(":") == 2 or int(length[:2]) >= 10:
-            raise KnownFailure("Sorry, I can't record replays longer than 10 minutes.")
+            raise ReplyWith("Sorry, I can't record replays longer than 10 minutes.")
 
 
 def _score_id(beatmap: int, player: int, mods: int) -> int:
     scores = OSU_API.get_scores(beatmap, username=player, mods=OsuMod(mods))
     if not scores:
-        raise KnownFailure("Sorry, I couldn't find the replay.")
+        raise ReplyWith("Sorry, I couldn't find the replay.")
     score = scores[0]
     if not score.replay_available:
-        raise KnownFailure("Sorry, the replay is not available for download.")
+        raise ReplyWith("Sorry, the replay is not available for download.")
     return score.score_id
 
 
