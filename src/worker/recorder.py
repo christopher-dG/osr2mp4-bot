@@ -5,12 +5,10 @@ from pathlib import Path
 from shutil import rmtree
 from tempfile import mkstemp
 
+from osr2mp4.osr2mp4 import Osr2mp4
+
 
 def record(mapset: Path, replay: Path) -> Path:
-    # This import is within the function so that the server can load this module
-    # without having osr2mp4 available.
-    from osr2mp4.osr2mp4 import Osr2mp4
-
     _, output = mkstemp(suffix=".mp4")
     data = {
         "osu! path": "/",
@@ -35,8 +33,10 @@ def record(mapset: Path, replay: Path) -> Path:
         "Enable PP counter": True,
         "api key": os.environ["OSU_API_KEY"],
     }
+    hostname = os.getenv("HOSTNAME", "unknown")
+    logs = os.path.join(os.environ["LOG_DIR"], f"osr2mp4-{hostname}.log")
     hook = sys.excepthook
-    osr = Osr2mp4(data, settings)
+    osr = Osr2mp4(data, settings, logtofile=True, logpath=logs)
     sys.excepthook = hook
     osr.startall()
     osr.joinall()

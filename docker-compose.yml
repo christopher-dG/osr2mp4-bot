@@ -12,6 +12,10 @@ services:
     restart: unless-stopped
     env_file: .env
     command: rq worker -u redis://redis
+    environment:
+      LOG_DIR: /tmp/logs
+    volumes:
+      - ${PWD}/logs:/tmp/logs
   redis:
     image: redis:6
     restart: unless-stopped

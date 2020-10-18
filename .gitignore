@@ -1,7 +1,7 @@
 .coverage
-.envrc
+.env
 .mypy_cache/
 .pytest_cache/
 __pycache__/
-downloads/
 htmlcov/
+logs/
