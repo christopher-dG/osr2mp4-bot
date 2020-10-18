@@ -22,7 +22,7 @@ def record(mapset: Path, replay: Path) -> Path:
         "FPS": 60,
         "Start time": 0,
         "End time": -1,
-        "Video codec": "XVID",
+        "Video codec": "mp4v",
         "Process": 2,
         "ffmpeg path": "ffmpeg",
     }
