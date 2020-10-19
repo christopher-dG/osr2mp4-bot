@@ -36,7 +36,7 @@ def job(item: Comment) -> None:
         logging.info(f"Video uploaded to {video_url}")
         success(item, video_url)
     except ReplyWith as e:
-        item.reply(e.args[0])
+        item.reply(e.msg)
     except Exception:
         logging.exception("Something failed...")
         failure(item)
