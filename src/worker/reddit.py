@@ -4,6 +4,7 @@ import re
 from typing import List, Tuple, cast
 
 from osuapi import OsuApi, OsuMod, ReqConnector
+from praw.exceptions import RedditAPIException
 from praw.models import Comment
 
 from . import ReplyWith
@@ -45,6 +46,17 @@ def parse_item(item: Comment) -> Tuple[int, int, str]:
 def success(item: Comment, url: str) -> None:
     item.reply(f"Here you go: {url}")
     _edit_osubot_comment(item, url)
+
+
+def reply(item: Comment, msg: str) -> None:
+    try:
+        item.reply(msg)
+    except RedditAPIException as e:
+        for item in e.items:
+            if e.items[0].error_type == "DELETED_COMMENT":
+                break
+        else:
+            raise
 
 
 def failure(item: Comment) -> None:

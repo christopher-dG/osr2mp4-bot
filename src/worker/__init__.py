@@ -10,7 +10,7 @@ class ReplyWith(Exception):
 
 from .osu import download_mapset, download_replay  # noqa: E402
 from .recorder import record  # noqa: E402
-from .reddit import failure, finished, parse_item, success  # noqa: E402
+from .reddit import failure, finished, parse_item, reply, success  # noqa: E402
 from .streamable import upload  # noqa: E402
 
 
@@ -36,7 +36,7 @@ def job(item: Comment) -> None:
         logging.info(f"Video uploaded to {video_url}")
         success(item, video_url)
     except ReplyWith as e:
-        item.reply(e.msg)
+        reply(item, e.msg)
     except Exception:
         logging.exception("Something failed...")
         failure(item)
