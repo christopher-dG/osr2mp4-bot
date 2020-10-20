@@ -4,6 +4,8 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    depends_on:
+      - redis
     command: python -m bot
     environment:
       REDIS_HOST: redis
@@ -11,6 +13,8 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    depends_on:
+      - redis
     command: rq worker -q -u redis://redis
     environment:
       LOG_DIR: /tmp/logs
