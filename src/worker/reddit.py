@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 
@@ -10,6 +11,7 @@ from praw.models import Comment
 from . import ReplyWith
 from ..common import is_osubot_comment
 
+LINK_TEXT = "Streamable replay"
 OSU_API = OsuApi(os.environ["OSU_API_KEY"], connector=ReqConnector())
 RE_MAPSET = re.compile(r"osu\.ppy\.sh/d/(\d+)")
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")
@@ -117,9 +119,9 @@ def _parse_mods(lines: List[str]) -> int:
 
 
 def _check_replay_already_recorded(lines: List[str]) -> None:
-    if "https://streamable.com" in " ".join(lines):
+    if LINK_TEXT in " ".join(lines):
         raise ReplyWith(
-            "This score has already been recorded, see the stickied comment."
+            "This replay has already been recorded, see the stickied comment."
         )
 
 
@@ -145,6 +147,10 @@ def _score_id(beatmap: int, player: int, mods: int) -> int:
 
 def _edit_osubot_comment(comment: Comment, url: str) -> None:
     comment = _find_osubot_comment(comment)
+    comment.refresh()
+    if LINK_TEXT in comment.body:
+        logging.info(f"Duplicate video should be deleted: {url}")
+        return
     lines = comment.body.splitlines()
-    lines.insert(lines.index("***"), f"[Streamable replay]({url})\n")
+    lines.insert(lines.index("***"), f"[{LINK_TEXT}]({url})\n")
     comment.edit("\n".join(lines))
