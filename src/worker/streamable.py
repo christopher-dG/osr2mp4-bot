@@ -6,16 +6,18 @@ from pathlib import Path
 import requests
 
 from requests import Response
+from requests_toolbelt import MultipartEncoder
 
 from . import ReplyWith
 
 
 def upload(video: Path, title: str) -> str:
-    url = "https://api.streamable.com/upload"
+    url = "https://httpbin.org/post"
     auth = (os.environ["STREAMABLE_USERNAME"], os.environ["STREAMABLE_PASSWORD"])
     with video.open("rb") as f:
-        files = {"file": (title, f)}
-        resp = requests.post(url, auth=auth, files=files)
+        data = MultipartEncoder({"file": (title, f)})
+        headers = {"Content-Type": data.content_type}
+        resp = requests.post(url, auth=auth, data=data, headers=headers)
     video.unlink()
     _check_response(resp)
     shortcode = resp.json()["shortcode"]
