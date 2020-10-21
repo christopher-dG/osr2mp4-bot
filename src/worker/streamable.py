@@ -9,12 +9,8 @@ from requests import Response
 
 from . import ReplyWith
 
-MAX_SIZE = 512 * 1024 * 1024
-
 
 def upload(video: Path, title: str) -> str:
-    if video.stat().st_size > MAX_SIZE:
-        raise ReplyWith("Sorry, the video file is too large for me to upload.")
     url = "https://api.streamable.com/upload"
     auth = (os.environ["STREAMABLE_USERNAME"], os.environ["STREAMABLE_PASSWORD"])
     with video.open("rb") as f:

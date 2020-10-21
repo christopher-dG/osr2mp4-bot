@@ -86,7 +86,6 @@ def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
     _check_replay_already_recorded(lines)
     _check_unranked(lines)
     _check_standard(lines)
-    _check_length(lines)
     return mapset, beatmap, player, mods
 
 
@@ -132,14 +131,6 @@ def _check_unranked(lines: List[str]) -> None:
 def _check_standard(lines: List[str]) -> None:
     if "osu!standard" not in lines[0]:
         raise ReplyWith("Sorry, I can only record osu!standard plays.")
-
-
-def _check_length(lines: List[str]) -> None:
-    match = RE_LENGTH.findall(" ".join(lines[5:7]))
-    if match:
-        length = match[-1]
-        if length.count(":") == 2 or int(length[:2]) >= 10:
-            raise ReplyWith("Sorry, I can't record replays longer than 10 minutes.")
 
 
 def _score_id(beatmap: int, player: int, mods: int) -> int:
