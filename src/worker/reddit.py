@@ -44,7 +44,7 @@ def parse_item(item: Comment) -> Tuple[int, int, str]:
 
 
 def success(item: Comment, url: str) -> None:
-    item.reply(f"Here you go: {url}")
+    reply(item, f"Here you go: {url}")
     _edit_osubot_comment(item, url)
 
 
@@ -53,14 +53,14 @@ def reply(item: Comment, msg: str) -> None:
         item.reply(msg)
     except RedditAPIException as e:
         for item in e.items:
-            if e.items[0].error_type == "DELETED_COMMENT":
+            if item.error_type == "DELETED_COMMENT":
                 break
         else:
             raise
 
 
 def failure(item: Comment) -> None:
-    item.reply("Sorry, something unexpected went wrong.")
+    reply(item, "Sorry, something unexpected went wrong.")
 
 
 def finished(item: Comment) -> None:
