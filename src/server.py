@@ -8,6 +8,7 @@ from redis import Redis
 from rq import Queue
 
 from .worker import job
+from .common import is_osubot_comment
 
 
 REDDIT = Reddit(
@@ -23,17 +24,15 @@ QUEUE = Queue(
 
 
 def _stream() -> Iterable[Comment]:
-    for item in REDDIT.inbox.stream():
-        if item.subject not in ("comment reply", "username mention"):
-            continue
-        comment = REDDIT.comment(item.id)
+    for comment in REDDIT.subreddit("osugame").stream.comments():
         if comment.saved:
             continue
-        if f"u/{os.environ['REDDIT_USERNAME']} record" not in comment.body:
-            continue
-        yield item
+        if is_osubot_comment(comment):
+            yield comment
+        if f"u/{os.environ['REDDIT_USERNAME']} record" in comment.body:
+            yield comment
 
 
 def main() -> None:
-    for item in _stream():
-        QUEUE.enqueue(job, item)
+    for comment in _stream():
+        QUEUE.enqueue(job, comment)

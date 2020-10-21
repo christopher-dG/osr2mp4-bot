@@ -8,6 +8,7 @@ from praw.exceptions import RedditAPIException
 from praw.models import Comment
 
 from . import ReplyWith
+from ..common import is_osubot_comment
 
 OSU_API = OsuApi(os.environ["OSU_API_KEY"], connector=ReqConnector())
 RE_MAPSET = re.compile(r"osu\.ppy\.sh/d/(\d+)")
@@ -35,22 +36,23 @@ MODS = {
 }
 
 
-def parse_item(item: Comment) -> Tuple[int, int, str]:
-    comment = _find_osubot_comment(item)
+def parse_comment(comment: Comment) -> Tuple[int, int, str]:
+    comment = _find_osubot_comment(comment)
     mapset, beatmap, player, mods = _parse_osubot_comment(comment.body)
     score = _score_id(beatmap, player, mods)
-    title = item.submission.title
+    title = comment.submission.title
     return mapset, score, title
 
 
-def success(item: Comment, url: str) -> None:
-    reply(item, f"Here you go: {url}")
-    _edit_osubot_comment(item, url)
+def success(comment: Comment, url: str) -> None:
+    if not is_osubot_comment(comment):
+        reply(comment, f"Here you go: {url}")
+    _edit_osubot_comment(comment, url)
 
 
-def reply(item: Comment, msg: str) -> None:
+def reply(comment: Comment, msg: str) -> None:
     try:
-        item.reply(msg)
+        comment.reply(msg)
     except RedditAPIException as e:
         for item in e.items:
             if item.error_type == "DELETED_COMMENT":
@@ -59,17 +61,18 @@ def reply(item: Comment, msg: str) -> None:
             raise
 
 
-def failure(item: Comment) -> None:
-    reply(item, "Sorry, something unexpected went wrong.")
+def failure(comment: Comment) -> None:
+    if not is_osubot_comment(comment):
+        reply(comment, "Sorry, something unexpected went wrong.")
 
 
-def finished(item: Comment) -> None:
-    item.save()
+def finished(comment: Comment) -> None:
+    comment.save()
 
 
-def _find_osubot_comment(item: Comment) -> Comment:
-    for comment in item.submission.comments:
-        if comment.author.name == "osu-bot":
+def _find_osubot_comment(comment: Comment) -> Comment:
+    for comment in comment.submission.comments:
+        if is_osubot_comment(comment):
             return comment
     raise ReplyWith("Sorry, I couldn't find a /u/osu-bot comment to use.")
 
@@ -149,8 +152,8 @@ def _score_id(beatmap: int, player: int, mods: int) -> int:
     return cast(int, score.score_id)
 
 
-def _edit_osubot_comment(item: Comment, url: str) -> None:
-    comment = _find_osubot_comment(item)
+def _edit_osubot_comment(comment: Comment, url: str) -> None:
+    comment = _find_osubot_comment(comment)
     lines = comment.body.splitlines()
     lines.insert(lines.index("***"), f"[Streamable replay]({url})\n")
     comment.edit("\n".join(lines))
