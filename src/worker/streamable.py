@@ -20,9 +20,9 @@ def upload(video: Path, title: str) -> str:
     with video.open("rb") as f:
         files = {"file": (title, f)}
         resp = requests.post(url, auth=auth, files=files)
+    video.unlink()
     _check_response(resp)
     shortcode = resp.json()["shortcode"]
-    video.unlink()
     return f"https://streamable.com/{shortcode}"
 
 
