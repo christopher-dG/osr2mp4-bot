@@ -19,7 +19,8 @@ REDDIT = Reddit(
     user_agent=os.environ["REDDIT_USER_AGENT"],
 )
 QUEUE = Queue(
-    connection=Redis(os.getenv("REDIS_HOST", "localhost")), default_timeout=900
+    connection=Redis(os.getenv("REDIS_HOST", "localhost")),
+    default_timeout=int(os.getenv("JOB_TIMEOUT", "900")),
 )
 
 

@@ -8,6 +8,7 @@ services:
       - redis
     command: python -m bot
     environment:
+      JOB_TIMEOUT: 900
       REDIS_HOST: redis
   worker:
     build: .
@@ -17,10 +18,13 @@ services:
       - redis
     command: rq worker -q -u redis://redis
     environment:
+      JOB_TIMEOUT: 900
       LOG_DIR: /tmp/logs
     volumes:
       - ${PWD}/logs:/tmp/logs
   redis:
     image: redis:6
     restart: unless-stopped
-    command: --loglevel warning
+    command: --appendonly yes --loglevel warning
+    volumes:
+      - ${PWD}/data:/data
