@@ -85,7 +85,6 @@ def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
     beatmap = _parse_beatmap(lines)
     player = _parse_player(lines)
     mods = _parse_mods(lines)
-    _check_replay_already_recorded(lines)
     _check_unranked(lines)
     _check_standard(lines)
     return mapset, beatmap, player, mods
@@ -116,13 +115,6 @@ def _parse_mods(lines: List[str]) -> int:
     match = RE_MODS.search(lines[6])
     mods = match[1] if match else ""
     return sum(MODS[mods[i : i + 2]] for i in range(0, len(mods), 2))  # noqa: E203
-
-
-def _check_replay_already_recorded(lines: List[str]) -> None:
-    if LINK_TEXT in " ".join(lines):
-        raise ReplyWith(
-            "This replay has already been recorded, see the stickied comment."
-        )
 
 
 def _check_unranked(lines: List[str]) -> None:
