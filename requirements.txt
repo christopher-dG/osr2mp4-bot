@@ -4,3 +4,4 @@ redis==3.5.3
 requests==2.24
 rq==1.5.2
 selenium==3.141.0
+sentry-sdk==0.19.1

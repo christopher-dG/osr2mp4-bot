@@ -6,7 +6,6 @@ from typing import Optional
 
 from redis import Redis
 
-
 JOB_TIMEOUT = int(os.getenv("JOB_TIMEOUT", "900"))
 PREFIX = "video"
 PROGRESS = "progress"

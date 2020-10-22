@@ -3,7 +3,7 @@ ENV APT_PKGS build-essential git libfreetype6-dev libjpeg-dev unzip zlib1g-dev
 ENV OSU_SKIN_PATH /home/bot/skin
 ENV PYTHONPATH /home/bot
 RUN \
-  useradd -m bot && \
+  useradd -m -u 1000 bot && \
   apt-get update && \
   apt-get -y install ${APT_PKGS} ffmpeg && \
   pip install pillow-simd && \

@@ -47,5 +47,7 @@ services:
     restart: unless-stopped
     volumes:
       - /dev/shm:/dev/shm
+    logging:
+      driver: none
 volumes:
   videos:
