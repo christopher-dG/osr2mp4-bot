@@ -9,7 +9,7 @@ from osr2mp4.osr2mp4 import Osr2mp4
 
 
 def record(mapset: Path, replay: Path) -> Path:
-    _, output = mkstemp(suffix=".mp4")
+    _, output = mkstemp(dir=os.environ["VIDEO_DIR"], suffix=".mp4")
     data = {
         "osu! path": "/",
         "Skin path": os.environ["OSU_SKIN_PATH"],

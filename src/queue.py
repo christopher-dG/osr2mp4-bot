@@ -4,11 +4,9 @@ from typing import Iterable
 
 from praw import Reddit
 from praw.models import Comment
-from redis import Redis
-from rq import Queue
 
 from .worker import job
-from .common import is_osubot_comment
+from .common import enqueue, is_osubot_comment
 
 
 REDDIT = Reddit(
@@ -17,10 +15,6 @@ REDDIT = Reddit(
     username=os.environ["REDDIT_USERNAME"],
     password=os.environ["REDDIT_PASSWORD"],
     user_agent=os.environ["REDDIT_USER_AGENT"],
-)
-QUEUE = Queue(
-    connection=Redis(os.getenv("REDIS_HOST", "localhost")),
-    default_timeout=int(os.getenv("JOB_TIMEOUT", "900")),
 )
 
 
@@ -36,4 +30,4 @@ def _stream() -> Iterable[Comment]:
 
 def main() -> None:
     for comment in _stream():
-        QUEUE.enqueue(job, comment)
+        enqueue(job, comment)

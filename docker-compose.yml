@@ -1,6 +1,6 @@
 version: '3'
 services:
-  server:
+  queue:
     build: .
     restart: unless-stopped
     env_file: .env
@@ -16,15 +16,36 @@ services:
     env_file: .env
     depends_on:
       - redis
-    command: rq worker -q -u redis://redis
+    command: rq worker --with-scheduler -q -u redis://redis
     environment:
       JOB_TIMEOUT: 900
       LOG_DIR: /tmp/logs
+      REDIS_HOST: redis
+      SELENIUM_HOST: selenium
+      VIDEO_DIR: /tmp/videos
     volumes:
       - ${PWD}/logs:/tmp/logs
+      - videos:/tmp/videos
+  files:
+    image: halverneus/static-file-server:v1.8.1
+    restart: unless-stopped
+    environment:
+      FOLDER: /data
+      PORT: 8080
+    volumes:
+      - videos:/data
+    ports:
+      - 80:8080
   redis:
     image: redis:6
     restart: unless-stopped
     command: --appendonly yes --loglevel warning
     volumes:
       - ${PWD}/data:/data
+  selenium:
+    image: selenium/standalone-firefox:3.141.59-20201010
+    restart: unless-stopped
+    volumes:
+      - /dev/shm:/dev/shm
+volumes:
+  videos:
