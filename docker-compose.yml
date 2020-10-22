@@ -16,7 +16,7 @@ services:
     env_file: .env
     depends_on:
       - redis
-    command: rq worker --with-scheduler -q -u redis://redis
+    command: rq worker --with-scheduler --quiet --url redis://redis
     environment:
       JOB_TIMEOUT: 900
       LOG_DIR: /tmp/logs
