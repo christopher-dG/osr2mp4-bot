@@ -39,6 +39,7 @@ MODS = {
 
 
 def parse_comment(comment: Comment) -> Tuple[int, int, str]:
+    """Try to extract `mapset`, `score`, `title` from the comment tree."""
     comment = _find_osubot_comment(comment)
     mapset, beatmap, player, mods = _parse_osubot_comment(comment.body)
     score = _score_id(beatmap, player, mods)
@@ -47,12 +48,14 @@ def parse_comment(comment: Comment) -> Tuple[int, int, str]:
 
 
 def success(comment: Comment, url: str) -> None:
+    """Complete a successful job."""
     if not is_osubot_comment(comment):
         reply(comment, f"Here you go: {url}")
     _edit_osubot_comment(comment, url)
 
 
 def reply(comment: Comment, msg: str) -> None:
+    """Reply to a comment, ignoring errors if the comment has been deleted."""
     try:
         comment.reply(msg)
     except RedditAPIException as e:
@@ -64,15 +67,18 @@ def reply(comment: Comment, msg: str) -> None:
 
 
 def failure(comment: Comment) -> None:
+    """Complete a failed job."""
     if not is_osubot_comment(comment):
         reply(comment, "Sorry, something unexpected went wrong.")
 
 
 def finished(comment: Comment) -> None:
+    """Complete a job regardless of its success or failure."""
     comment.save()
 
 
 def _find_osubot_comment(comment: Comment) -> Comment:
+    """Try to find an osu!bot score post comment in the comment tree."""
     for comment in comment.submission.comments:
         if is_osubot_comment(comment):
             return comment
@@ -80,6 +86,7 @@ def _find_osubot_comment(comment: Comment) -> Comment:
 
 
 def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
+    """Try to extract `mapset`, `beatmap`, `player`, and `mods`."""
     lines = body.splitlines()
     mapset = _parse_mapset(lines)
     beatmap = _parse_beatmap(lines)
@@ -91,6 +98,8 @@ def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
 
 
 def _parse_mapset(lines: List[str]) -> int:
+    """Parse the mapset ID."""
+    # Mapset ID is always on the first line unless the beatmap wasn't found.
     match = RE_MAPSET.search(lines[0])
     if not match:
         raise ReplyWith("Sorry, I couldn't find the mapset.")
@@ -98,6 +107,8 @@ def _parse_mapset(lines: List[str]) -> int:
 
 
 def _parse_beatmap(lines: List[str]) -> int:
+    """Parse the beatmap ID."""
+    # Beatmap ID is always on the first line, just like the mapset ID.
     match = re.search(RE_BEATMAP, lines[0])
     if not match:
         raise ReplyWith("Sorry, I couldn't find the beatmap.")
@@ -105,6 +116,8 @@ def _parse_beatmap(lines: List[str]) -> int:
 
 
 def _parse_player(lines: List[str]) -> int:
+    """Parse the player ID."""
+    # The line with the player ID only changes if
     match = RE_PLAYER.search(" ".join(lines[9:11]))
     if not match:
         raise ReplyWith("Sorry, I couldn't find the player.")
@@ -112,22 +125,33 @@ def _parse_player(lines: List[str]) -> int:
 
 
 def _parse_mods(lines: List[str]) -> int:
+    """Parse the mods."""
+    # This will only match if there's a second row in the beatmap stats.
     match = RE_MODS.search(lines[6])
     mods = match[1] if match else ""
+    # If there are no mods, 0 means nomod.
     return sum(MODS[mods[i : i + 2]] for i in range(0, len(mods), 2))  # noqa: E203
 
 
 def _check_unranked(lines: List[str]) -> None:
+    """Check if the mapset is unranked."""
+    # For unranked beatmaps, ranked status goes on the second line.
     if "Unranked" in lines[1]:
         raise ReplyWith("Sorry, I can't record replays for unranked maps.")
 
 
 def _check_standard(lines: List[str]) -> None:
-    if "osu!standard" not in lines[0]:
+    """Check that the game mode is osu!standard."""
+    # The game mode is on the first line, unless the beatmap is unranked,
+    # in which case the game mode is on the second line. Unranked maps are rejected
+    # anyways, but check both lines to make sure we get the right error message,
+    # not matter which order the checks run in.
+    if "osu!standard" not in "".join(lines[:2]):
         raise ReplyWith("Sorry, I can only record osu!standard plays.")
 
 
 def _score_id(beatmap: int, player: int, mods: int) -> int:
+    """Find the score ID and ensure that the replay is available."""
     scores = OSU_API.get_scores(beatmap, username=player, mods=OsuMod(mods))
     if not scores:
         raise ReplyWith("Sorry, I couldn't find the replay.")
@@ -138,7 +162,11 @@ def _score_id(beatmap: int, player: int, mods: int) -> int:
 
 
 def _edit_osubot_comment(comment: Comment, url: str) -> None:
+    """Add `url` to the score post comment."""
     comment = _find_osubot_comment(comment)
+    # If two jobs ran on the same score at once, then a video link may have been added
+    # since this job started. The progress-tracking cache should prevent this,
+    # but we're being safe anyways.
     comment.refresh()
     if LINK_TEXT in comment.body:
         logging.info(f"Duplicate video should be deleted: {url}")

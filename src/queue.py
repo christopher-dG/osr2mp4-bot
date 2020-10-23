@@ -18,12 +18,13 @@ REDDIT = Reddit(
 
 
 def _stream() -> Iterable[Comment]:
+    """Generator for comments that should be reacted to."""
     for comment in REDDIT.subreddit("osugame").stream.comments():
         if comment.saved:
             continue
-        if is_osubot_comment(comment):
+        elif is_osubot_comment(comment):
             yield comment
-        if f"u/{os.environ['REDDIT_USERNAME']} record" in comment.body:
+        elif f"u/{os.environ['REDDIT_USERNAME']} record" in comment.body:
             yield comment
 
 

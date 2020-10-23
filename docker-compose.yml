@@ -1,6 +1,7 @@
 version: '3'
 services:
   queue:
+    # Lists Reddit comments and sends relevant ones to the workers.
     build: .
     restart: unless-stopped
     env_file: .env
@@ -11,6 +12,7 @@ services:
       JOB_TIMEOUT: 900
       REDIS_HOST: redis
   worker:
+    # Receives jobs and does the recording work.
     build: .
     restart: unless-stopped
     env_file: .env
@@ -27,6 +29,7 @@ services:
       - ${PWD}/logs:/tmp/logs
       - videos:/tmp/videos
   files:
+    # Publically accessible file server where Streamable can read videos from.
     image: halverneus/static-file-server:v1.8.1
     restart: unless-stopped
     environment:
@@ -37,12 +40,14 @@ services:
     ports:
       - 80:8080
   redis:
+    # Job queue backend and persistent storage service.
     image: redis:6
     restart: unless-stopped
     command: --appendonly yes --loglevel warning
     volumes:
       - ${PWD}/data:/data
   selenium:
+    # Required for initiating Streamable uploads.
     image: selenium/standalone-firefox:3.141.59-20201010
     restart: unless-stopped
     volumes:

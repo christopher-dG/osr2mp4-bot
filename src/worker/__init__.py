@@ -18,6 +18,7 @@ from .streamable import upload  # noqa: E402
 
 
 def job(comment: Comment) -> None:
+    """Acquire required resources, then produce/upload a video."""
     fmt = "%(asctime)s %(levelname)s: %(message)s"
     logging.basicConfig(level=logging.INFO, format=fmt)
     sub = comment.submission
@@ -57,5 +58,6 @@ def job(comment: Comment) -> None:
         try:
             set_video_progress(score, False)
         except NameError:
+            # If something failed in parse_comment, there's no score ID.
             pass
         finished(comment)

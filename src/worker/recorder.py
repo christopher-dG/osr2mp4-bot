@@ -9,6 +9,9 @@ from osr2mp4.osr2mp4 import Osr2mp4
 
 
 def record(mapset: Path, replay: Path) -> Path:
+    """Record `replay` on `mapset`, returning the path to the video file."""
+    # $VIDEO_DIR must be served at $SERVER_ADDR, so that Streamable can read the file.
+    # It's taken care of in Docker Compose.
     _, output = mkstemp(dir=os.environ["VIDEO_DIR"], suffix=".mp4")
     data = {
         "osu! path": "/",
@@ -33,8 +36,10 @@ def record(mapset: Path, replay: Path) -> Path:
         "Enable PP counter": True,
         "api key": os.environ["OSU_API_KEY"],
     }
+    # This variable will generally only be set in Docker.
     hostname = os.getenv("HOSTNAME", "unknown")
     logs = os.path.join(os.environ["LOG_DIR"], f"osr2mp4-{hostname}.log")
+    # Stop the `Osr2mp4` constructor from replacing `sys.excepthook`.
     hook = sys.excepthook
     osr = Osr2mp4(data, settings, logtofile=True, logpath=logs)
     sys.excepthook = hook

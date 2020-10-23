@@ -13,17 +13,20 @@ REDIS = Redis(os.getenv("REDIS_HOST", "localhost"))
 
 
 def get_video(score: int) -> Optional[str]:
-    _wait(f"{PREFIX}:{PROGRESS}:{score}")
+    """Get the URL to a previously uploaded video of `score`."""
+    _wait(score)
     val = REDIS.get(f"{PREFIX}:{score}")
     return val.decode() if val else None
 
 
 def set_video(score: int, url: str) -> None:
+    """Set the URL of `score` to `url`."""
     REDIS.set(f"{PREFIX}:{score}", url)
     set_video_progress(score, False)
 
 
 def set_video_progress(score: int, status: bool) -> None:
+    """Mark `score` as being currently or no longer in progress."""
     key = f"{PREFIX}:{PROGRESS}:{score}"
     if status:
         REDIS.set(key, "true", ex=JOB_TIMEOUT)
@@ -31,7 +34,9 @@ def set_video_progress(score: int, status: bool) -> None:
         REDIS.delete(key)
 
 
-def _wait(key: str) -> None:
+def _wait(score: int) -> None:
+    """Wait until a progress marker for `score` no longer exists."""
+    key = f"{PREFIX}:{PROGRESS}:{score}"
     if not REDIS.get(key):
         return
     logging.info("Waiting for in-progress video...")
