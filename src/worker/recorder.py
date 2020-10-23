@@ -25,7 +25,7 @@ def record(mapset: Path, replay: Path) -> Path:
         "FPS": 60,
         "Start time": 0,
         "End time": -1,
-        "Video codec": "mp4v",
+        "Video codec": "XVID",
         "Process": 2,
         "ffmpeg path": "ffmpeg",
     }
@@ -34,6 +34,7 @@ def record(mapset: Path, replay: Path) -> Path:
         "Song volume": 100,
         "Effect volume": 100,
         "Enable PP counter": True,
+        "Use FFmpeg video writer": True,
         "api key": os.environ["OSU_API_KEY"],
     }
     # This variable will generally only be set in Docker.

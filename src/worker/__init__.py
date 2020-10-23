@@ -34,7 +34,7 @@ def job(comment: Comment) -> None:
             logging.info(f"mapset={mapset}, score={score}")
             logging.info("Downloading mapset...")
             mapset_path = download_mapset(mapset)
-            logging.info(f"Beatmap downloaded to {mapset_path}")
+            logging.info(f"Mapset downloaded to {mapset_path}")
             logging.info("Downloading replay...")
             replay_path = download_replay(score)
             logging.info(f"Replay downloaded to {replay_path}")
