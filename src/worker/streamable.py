@@ -4,10 +4,12 @@ import time
 
 from datetime import timedelta
 from pathlib import Path
-from typing import cast
+from typing import Optional, cast
 
 import requests
 
+from requests import Response
+from requests_toolbelt import MultipartEncoder
 from selenium.webdriver import Remote
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -20,16 +22,48 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from ..common import enqueue
 
-# Streamable does have an upload API, but it's unreliable for large files.
-# See `094e9ee2edb1a49e7cac334490118d28d303adba` for that code.
-
 
 def upload(video: Path, title: str) -> str:
     """Upload `video` called `title` to Streamable, returning the URL."""
+    # Uploading via file is unreliable for very large files,
+    # but uploading via URL cuts off the last few seconds of videos.
+    url = _upload_with_file(video, title)
+    if url:
+        return url
+    logging.warning("Uploading file directly failed, using URL method")
+    return _upload_with_url(video, title)
+
+
+def _upload_with_file(video: Path, title: str) -> Optional[str]:
+    """Try to upload `video` to Streamable via the upload API."""
+    url = "https://api.streamable.com/upload"
+    auth = (os.environ["STREAMABLE_USERNAME"], os.environ["STREAMABLE_PASSWORD"])
+    with video.open("rb") as f:
+        data = MultipartEncoder({"file": (title, f)})
+        headers = {"Content-Type": data.content_type}
+        resp = requests.post(url, auth=auth, data=data, headers=headers)
+    video.unlink()
+    if not _check_response(resp):
+        return None
+    shortcode = resp.json()["shortcode"]
+    return f"https://streamable.com/{shortcode}"
+
+
+def _check_response(resp: Response) -> bool:
+    ct_ok = "application/json" in resp.headers["Content-Type"].lower()
+    sc_ok = ct_ok and isinstance(resp.json().get("shortcode"), str)
+    ok = resp.ok and ct_ok and sc_ok
+    if not ok:
+        logging.error(f"Error from Streamable ({resp.status_code}):\n{resp.text}")
+    return ok
+
+
+def _upload_with_url(video: Path, title: str) -> str:
+    """Upload `video` via URL import."""
     with _webdriver() as wd:
-        _login(wd)
-        url = _upload(wd, video, title)
-    # Because `_upload` returns before the upload is actually finished,
+        _wd_login(wd)
+        url = _wd_upload(wd, video, title)
+    # Because `wd_upload` returns before the upload is actually finished,
     # we can't delete the video file yet, although we need to eventually.
     # Create a new job that handles that at some point in the future.
     enqueue(_wait, url, video)
@@ -47,7 +81,7 @@ def _webdriver() -> WebDriver:
     return wd
 
 
-def _login(wd: WebDriver) -> None:
+def _wd_login(wd: WebDriver) -> None:
     """Log `wd` into Streamable."""
     wd.get("https://streamable.com/login")
     username, password = wd.find_elements(By.CLASS_NAME, "form-control")
@@ -58,8 +92,8 @@ def _login(wd: WebDriver) -> None:
     wait.until(title_contains("Dashboard"))
 
 
-def _upload(wd: WebDriver, video: Path, title: str) -> str:
-    """Start the upload of `video`."""
+def _wd_upload(wd: WebDriver, video: Path, title: str) -> str:
+    """Start the upload of `video` via `wd`."""
     # We're not actually uploading the file ourselves,
     # just supplying a URL where it can find the video file.
     # It's assumed that `video` is available at $SERVER_ADDR.
