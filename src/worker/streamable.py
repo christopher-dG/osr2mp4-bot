@@ -4,12 +4,10 @@ import time
 
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 import requests
 
-from requests import Response
-from requests_toolbelt import MultipartEncoder
 from selenium.webdriver import Remote
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -25,41 +23,6 @@ from ..common import enqueue
 
 def upload(video: Path, title: str) -> str:
     """Upload `video` called `title` to Streamable, returning the URL."""
-    # Uploading via file is unreliable for very large files,
-    # but uploading via URL cuts off the last few seconds of videos.
-    url = _upload_with_file(video, title)
-    if url:
-        return url
-    logging.warning("Uploading file directly failed, using URL method")
-    return _upload_with_url(video, title)
-
-
-def _upload_with_file(video: Path, title: str) -> Optional[str]:
-    """Try to upload `video` to Streamable via the upload API."""
-    url = "https://api.streamable.com/upload"
-    auth = (os.environ["STREAMABLE_USERNAME"], os.environ["STREAMABLE_PASSWORD"])
-    with video.open("rb") as f:
-        data = MultipartEncoder({"file": (title, f)})
-        headers = {"Content-Type": data.content_type}
-        resp = requests.post(url, auth=auth, data=data, headers=headers)
-    video.unlink()
-    if not _check_response(resp):
-        return None
-    shortcode = resp.json()["shortcode"]
-    return f"https://streamable.com/{shortcode}"
-
-
-def _check_response(resp: Response) -> bool:
-    ct_ok = "application/json" in resp.headers["Content-Type"].lower()
-    sc_ok = ct_ok and isinstance(resp.json().get("shortcode"), str)
-    ok = resp.ok and ct_ok and sc_ok
-    if not ok:
-        logging.error(f"Error from Streamable ({resp.status_code}):\n{resp.text}")
-    return ok
-
-
-def _upload_with_url(video: Path, title: str) -> str:
-    """Upload `video` via URL import."""
     with _webdriver() as wd:
         _wd_login(wd)
         url = _wd_upload(wd, video, title)

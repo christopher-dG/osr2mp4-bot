@@ -2,7 +2,6 @@ osuapi==0.0.42
 praw==7.1.0
 redis==3.5.3
 requests==2.24
-requests_toolbelt==0.9.1
 rq==1.5.2
 selenium==3.141.0
 sentry-sdk==0.19.1
