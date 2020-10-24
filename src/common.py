@@ -9,7 +9,7 @@ from rq import Queue
 
 QUEUE = Queue(
     connection=Redis(os.getenv("REDIS_HOST", "localhost")),
-    default_timeout=int(os.getenv("JOB_TIMEOUT", "900")),
+    default_timeout=int(os.getenv("JOB_TIMEOUT", "1800")),
 )
 
 

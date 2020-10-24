@@ -9,7 +9,7 @@ services:
       - redis
     command: python -m bot
     environment:
-      JOB_TIMEOUT: 900
+      JOB_TIMEOUT: 1800
       REDIS_HOST: redis
   worker:
     # Receives jobs and does the recording work.
@@ -20,7 +20,7 @@ services:
       - redis
     command: rq worker --with-scheduler --quiet --url redis://redis
     environment:
-      JOB_TIMEOUT: 900
+      JOB_TIMEOUT: 1800
       LOG_DIR: /tmp/logs
       REDIS_HOST: redis
       SELENIUM_HOST: selenium
