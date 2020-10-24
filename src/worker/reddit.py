@@ -79,6 +79,8 @@ def finished(comment: Comment) -> None:
 
 def _find_osubot_comment(comment: Comment) -> Comment:
     """Try to find an osu!bot score post comment in the comment tree."""
+    if is_osubot_comment(comment):
+        return comment
     for comment in comment.submission.comments:
         if is_osubot_comment(comment):
             return comment
