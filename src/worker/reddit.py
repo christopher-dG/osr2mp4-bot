@@ -169,8 +169,9 @@ def _edit_osubot_comment(comment: Comment, url: str) -> None:
     # since this job started. The progress-tracking cache should prevent this,
     # but we're being safe anyways.
     comment.refresh()
-    if LINK_TEXT in comment.body and url not in comment.body:
-        logging.info(f"Duplicate video should be deleted: {url}")
+    if LINK_TEXT in comment.body:
+        if url not in comment.body:
+            logging.info(f"Duplicate video should be deleted: {url}")
         return
     lines = comment.body.splitlines()
     lines.insert(lines.index("***"), f"[{LINK_TEXT}]({url})\n")
