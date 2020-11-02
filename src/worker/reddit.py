@@ -13,7 +13,6 @@ from ..common import is_osubot_comment
 
 LINK_TEXT = "Streamable replay"
 OSU_API = OsuApi(os.environ["OSU_API_KEY"], connector=ReqConnector())
-RE_MAPSET = re.compile(r"osu\.ppy\.sh/d/(\d+)")
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")
 RE_PLAYER = re.compile(r"osu\.ppy\.sh/u/(\d+)")
 RE_LENGTH = re.compile(r"([\d:]{2,5}:\d{2})")
@@ -90,22 +89,13 @@ def _find_osubot_comment(comment: Comment) -> Comment:
 def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
     """Try to extract `mapset`, `beatmap`, `player`, and `mods`."""
     lines = body.splitlines()
-    mapset = _parse_mapset(lines)
     beatmap = _parse_beatmap(lines)
+    mapset = _get_mapset(beatmap)
     player = _parse_player(lines)
     mods = _parse_mods(lines)
     _check_unranked(lines)
     _check_standard(lines)
     return mapset, beatmap, player, mods
-
-
-def _parse_mapset(lines: List[str]) -> int:
-    """Parse the mapset ID."""
-    # Mapset ID is always on the first line unless the beatmap wasn't found.
-    match = RE_MAPSET.search(lines[0])
-    if not match:
-        raise ReplyWith("Sorry, I couldn't find the mapset.")
-    return int(match[1])
 
 
 def _parse_beatmap(lines: List[str]) -> int:
@@ -115,6 +105,15 @@ def _parse_beatmap(lines: List[str]) -> int:
     if not match:
         raise ReplyWith("Sorry, I couldn't find the beatmap.")
     return int(match[1])
+
+
+def _get_mapset(beatmap: int) -> int:
+    """Get the mapset ID of a beatmap."""
+    beatmaps = OSU_API.get_beatmaps(beatmap_id=beatmap)
+    if not beatmaps:
+        raise ReplyWith("Sorry, I couldn't find the mapset.")
+    mapset = beatmaps[0].beatmapset_id
+    return cast(int, mapset)
 
 
 def _parse_player(lines: List[str]) -> int:
