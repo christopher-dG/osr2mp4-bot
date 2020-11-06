@@ -12,3 +12,14 @@ jobs:
           python-version: 3.8
       - run: pip install -r requirements.txt black flake8 mypy pytest-cov
       - run: ./test.sh
+        env:
+          OSU_USERNAME: ${{ secrets.OSU_USERNAME }}
+          OSU_PASSWORD: ${{ secrets.OSU_PASSWORD }}
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: ./test.sh docker
+        env:
+          OSU_USERNAME: ${{ secrets.OSU_USERNAME }}
+          OSU_PASSWORD: ${{ secrets.OSU_PASSWORD }}
