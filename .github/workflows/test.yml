@@ -19,7 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: |
+          cat > .env <<EOF
+          OSU_API_KEY=${{ secrets.OSU_API_KEY }}
+          OSU_USERNAME=${{ secrets.OSU_USERNAME }}
+          OSU_PASSWORD=${{ secrets.OSU_PASSWORD }}
+          STREAMABLE_USERNAME=${{ secrets.STREAMABLE_USERNAME }}
+          STREAMABLE_PASSWORD=${{ secrets.STREAMABLE_PASSWORD }}
+          EOF
       - run: ./test.sh docker
-        env:
-          OSU_USERNAME: ${{ secrets.OSU_USERNAME }}
-          OSU_PASSWORD: ${{ secrets.OSU_PASSWORD }}

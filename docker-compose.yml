@@ -7,7 +7,7 @@ services:
     env_file: .env
     depends_on:
       - redis
-    command: python -m bot
+    command: python -m src
     environment:
       JOB_TIMEOUT: 1800
       REDIS_HOST: redis
@@ -19,13 +19,11 @@ services:
     depends_on:
       - files
       - redis
-      - selenium
     command: rq worker --with-scheduler --quiet --url redis://redis
     environment:
       JOB_TIMEOUT: 1800
       LOG_DIR: /tmp/logs
       REDIS_HOST: redis
-      SELENIUM_HOST: selenium
       VIDEO_DIR: /tmp/videos
     volumes:
       - ${PWD}/logs:/tmp/logs
@@ -48,13 +46,5 @@ services:
     command: --appendonly yes --loglevel warning
     volumes:
       - ${PWD}/data:/data
-  selenium:
-    # Required for initiating Streamable uploads.
-    image: selenium/standalone-firefox:3.141.59-20201010
-    restart: unless-stopped
-    volumes:
-      - /dev/shm:/dev/shm
-    logging:
-      driver: none
 volumes:
   videos:

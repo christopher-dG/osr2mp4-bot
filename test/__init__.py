@@ -17,6 +17,10 @@ def has_osu_creds():
     return "OSU_USERNAME" in os.environ and "OSU_PASSWORD" in os.environ
 
 
+def has_streamable_creds():
+    return "STREAMABLE_USERNAME" in os.environ and "STREAMABLE_PASSWORD" in os.environ
+
+
 os.environ["OSU_API_KEY"] = "x"
 os.environ["REDDIT_CLIENT_ID"] = "x"
 os.environ["REDDIT_CLIENT_SECRET"] = "x"

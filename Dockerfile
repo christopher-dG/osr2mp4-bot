@@ -28,4 +28,4 @@ RUN \
   apt-get -y autoremove && \
   rm -rf /tmp/*
 USER bot
-COPY src/ /home/bot/bot
+COPY src/ /home/bot/src
