@@ -13,18 +13,20 @@ def is_docker():
     return os.path.isfile("/.dockerenv")
 
 
-def has_osu_creds():
-    return "OSU_USERNAME" in os.environ and "OSU_PASSWORD" in os.environ
+def has_osu_api_creds():
+    return _has_env_vars("OSU_API_KEY")
+
+
+def has_osu_web_creds():
+    return _has_env_vars("OSU_USERNAME", "OSU_PASSWORD")
 
 
 def has_streamable_creds():
-    return "STREAMABLE_USERNAME" in os.environ and "STREAMABLE_PASSWORD" in os.environ
+    return _has_env_vars("STREAMABLE_USERNAME", "STREAMABLE_PASSWORD")
 
 
-os.environ["OSU_API_KEY"] = "x"
-os.environ["REDDIT_CLIENT_ID"] = "x"
-os.environ["REDDIT_CLIENT_SECRET"] = "x"
-os.environ["REDDIT_PASSWORD"] = "x"
-os.environ["REDDIT_USER_AGENT"] = "x"
+def _has_env_vars(*keys):
+    return all(os.environ.get(k) for k in keys)
+
 
 os.environ["REDDIT_USERNAME"] = "osu-bot"

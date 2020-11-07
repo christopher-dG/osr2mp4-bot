@@ -54,8 +54,8 @@ def test_set_video_progress(redis):
 
 
 @patch("src.worker.cache.REDIS")
-@patch("logging.info")
-@patch("time.sleep")
+@patch("src.worker.cache.logging.info")
+@patch("src.worker.cache.time.sleep")
 def test_wait(sleep, info, redis):
     redis.get.side_effect = [None, "a", "b", None]
     cache._wait(1)

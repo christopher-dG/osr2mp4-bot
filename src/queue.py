@@ -9,11 +9,11 @@ from .worker import job
 from .common import enqueue, is_osubot_comment
 
 REDDIT = Reddit(
-    client_id=os.environ["REDDIT_CLIENT_ID"],
-    client_secret=os.environ["REDDIT_CLIENT_SECRET"],
-    username=os.environ["REDDIT_USERNAME"],
-    password=os.environ["REDDIT_PASSWORD"],
-    user_agent=os.environ["REDDIT_USER_AGENT"],
+    client_id=os.environ.get("REDDIT_CLIENT_ID", ""),
+    client_secret=os.environ.get("REDDIT_CLIENT_SECRET", ""),
+    username=os.environ.get("REDDIT_USERNAME", ""),
+    password=os.environ.get("REDDIT_PASSWORD", ""),
+    user_agent=os.environ.get("REDDIT_USER_AGENT", ""),
 )
 
 

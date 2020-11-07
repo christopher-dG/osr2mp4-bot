@@ -12,7 +12,7 @@ from . import ReplyWith
 from ..common import is_osubot_comment
 
 LINK_TEXT = "Streamable replay"
-OSU_API = OsuApi(os.environ["OSU_API_KEY"], connector=ReqConnector())
+OSU_API = OsuApi(os.environ.get("OSU_API_KEY", ""), connector=ReqConnector())
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")
 RE_PLAYER = re.compile(r"osu\.ppy\.sh/u/(\d+)")
 RE_LENGTH = re.compile(r"([\d:]{2,5}:\d{2})")
@@ -93,7 +93,7 @@ def _parse_osubot_comment(body: str) -> Tuple[int, int, int, int]:
     mapset = _get_mapset(beatmap)
     player = _parse_player(lines)
     mods = _parse_mods(lines)
-    _check_unranked(lines)
+    _check_not_unranked(lines)
     _check_standard(lines)
     return mapset, beatmap, player, mods
 
@@ -118,7 +118,7 @@ def _get_mapset(beatmap: int) -> int:
 
 def _parse_player(lines: List[str]) -> int:
     """Parse the player ID."""
-    # The line with the player ID only changes if
+    # The line with the player ID depends on whether or not the beatmap has mods.
     match = RE_PLAYER.search(" ".join(lines[9:11]))
     if not match:
         raise ReplyWith("Sorry, I couldn't find the player.")
@@ -134,8 +134,8 @@ def _parse_mods(lines: List[str]) -> int:
     return sum(MODS[mods[i : i + 2]] for i in range(0, len(mods), 2))  # noqa: E203
 
 
-def _check_unranked(lines: List[str]) -> None:
-    """Check if the mapset is unranked."""
+def _check_not_unranked(lines: List[str]) -> None:
+    """Check that the mapset is not unranked."""
     # For unranked beatmaps, ranked status goes on the second line.
     if "Unranked" in lines[1]:
         raise ReplyWith("Sorry, I can't record replays for unranked maps.")

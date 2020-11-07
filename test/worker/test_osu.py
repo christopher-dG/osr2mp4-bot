@@ -4,10 +4,10 @@ import pytest
 
 from src.worker import osu
 
-from .. import has_osu_creds
+from .. import has_osu_web_creds
 
 
-@pytest.mark.skipif(not has_osu_creds(), reason="Needs osu! credentials")
+@pytest.mark.skipif(not has_osu_web_creds(), reason="Needs osu!web credentials")
 def test_download_mapset_e2e():
     path = osu.download_mapset(53827)
     assert path.is_dir()
@@ -17,7 +17,7 @@ def test_download_mapset_e2e():
     rmtree(path)
 
 
-@pytest.mark.skipif(not has_osu_creds(), reason="Needs osu! credentials")
+@pytest.mark.skipif(not has_osu_web_creds(), reason="Needs osu!web credentials")
 def test_download_replay_e2e():
     path = osu.download_replay(2968679845)
     assert path.suffix == ".osr"
