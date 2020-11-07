@@ -6,6 +6,8 @@ from pathlib import Path
 
 import requests
 
+from requests import Response
+
 from . import ReplyWith
 from ..common import enqueue
 
@@ -21,9 +23,7 @@ def upload(video: Path, title: str) -> str:
     source_url = f"{os.environ['SERVER_ADDR']}/{video.name}"
     params = {"url": source_url, "title": title}
     resp = requests.get("https://api.streamable.com/import", auth=auth, params=params)
-    # If we do something wrong, we still get a 200, but it's an HTML page.
-    if resp.headers["Content-Type"] != "application/json":
-        raise ReplyWith("Sorry, uploading to Streamable failed.")
+    _check_response(resp)
     shortcode = resp.json()["shortcode"]
     # Because the response comes before the upload is actually finished,
     # we can't delete the video file yet, although we need to eventually.
@@ -32,11 +32,28 @@ def upload(video: Path, title: str) -> str:
     return f"https://streamable.com/{shortcode}"
 
 
+def _check_response(resp: Response) -> None:
+    """Verify that the `resp` to an upload request indicates success."""
+    ex = ReplyWith("Sorry, uploading to Streamable failed.")
+    if resp.headers["Content-Type"] != "application/json":
+        logging.error("Streamable did not return JSON")
+        raise ex
+    if not resp.ok:
+        logging.error(f"Streamable upload failed ({resp.status_code})")
+        logging.info(resp.text)
+        raise ex
+    if not isinstance(resp.json().get("shortcode"), str):
+        logging.error("Streamable did not return shortcode")
+        logging.info(resp.text)
+        raise ex
+
+
 def _wait(shortcode: str, video: Path) -> None:
     """Wait for the video with `shortcode` to be uploaded, then delete `video`."""
     resp = requests.get(f"https://api.streamable.com/videos/{shortcode}")
     if not resp.ok:
         logging.warning("Retrieving video failed")
+        return
     status = resp.json()["status"]
     if status in [0, 1]:
         # Still in progress, so run this function again in a while.
