@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd $(dirname "$0")
+cd "$(dirname $0)/.."
 
 if [[ "$1" == "docker" ]]; then
   set -euxo pipefail
@@ -15,7 +15,7 @@ if [[ "$1" == "docker" ]]; then
   unzip -d "$mapset" assets/mapset.osz
   docker-compose up --build --detach worker
   docker cp "$mapset" osr2mp4-bot-test_worker_1:/tmp/mapset
-  rm -rf "$mapset"
+  rm --recursive --force "$mapset"
   for file in assets/replay.osr setup.cfg test; do
     docker cp "$file" "osr2mp4-bot-test_worker_1:/tmp/$(basename $file)"
   done
@@ -25,7 +25,7 @@ if [[ "$1" == "docker" ]]; then
     pip install pytest-cov
     mkdir \$HOME/testenv
     cd \$HOME/testenv
-    cp --recursive /home/bot/src /tmp/mapset /tmp/replay.osr /tmp/test /tmp/setup.cfg .
+    cp --recursive \$HOME/src /tmp/mapset /tmp/replay.osr /tmp/test /tmp/setup.cfg .
     python -m pytest --cov src $@
 EOF
   docker-compose exec -T redis rm /data/appendonly.aof

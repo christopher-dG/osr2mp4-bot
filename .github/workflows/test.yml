@@ -11,7 +11,7 @@ jobs:
         with:
           python-version: 3.8
       - run: pip install -r requirements.txt black flake8 mypy pytest-cov
-      - run: ./test.sh
+      - run: ./bin/test.sh
         env:
           OSU_USERNAME: ${{ secrets.OSU_USERNAME }}
           OSU_PASSWORD: ${{ secrets.OSU_PASSWORD }}
@@ -27,4 +27,4 @@ jobs:
           STREAMABLE_USERNAME=${{ secrets.STREAMABLE_USERNAME }}
           STREAMABLE_PASSWORD=${{ secrets.STREAMABLE_PASSWORD }}
           EOF
-      - run: ./test.sh docker
+      - run: ./bin/test.sh docker
