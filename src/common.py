@@ -14,14 +14,17 @@ QUEUE = Queue(
 
 
 def enqueue(
-    f: Callable[..., None], *args: object, wait: Optional[timedelta] = None
+    f: Callable[..., None],
+    *args: object,
+    wait: Optional[timedelta] = None,
+    **kwargs: object,
 ) -> None:
     """Add a job to the queue to be executed immediately by default or after `wait`."""
     if wait:
         # This requires the worker(s) to have --with-scheduler.
-        QUEUE.enqueue_in(wait, f, *args)
+        QUEUE.enqueue_in(wait, f, *args, **kwargs)
     else:
-        QUEUE.enqueue(f, *args)
+        QUEUE.enqueue(f, *args, **kwargs)
 
 
 def is_osubot_comment(comment: Comment) -> bool:
