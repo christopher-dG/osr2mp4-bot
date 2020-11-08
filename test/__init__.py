@@ -21,6 +21,16 @@ def has_osu_web_creds():
     return _has_env_vars("OSU_USERNAME", "OSU_PASSWORD")
 
 
+def has_reddit_creds():
+    return _has_env_vars(
+        "REDDIT_CLIENT_ID",
+        "REDDIT_CLIENT_SECRET",
+        "REDDIT_USERNAME",
+        "REDDIT_PASSWORD",
+        "REDDIT_USER_AGENT",
+    )
+
+
 def has_streamable_creds():
     return _has_env_vars("STREAMABLE_USERNAME", "STREAMABLE_PASSWORD")
 

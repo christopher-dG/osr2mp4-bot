@@ -21,6 +21,7 @@ if [[ "$1" == "docker" ]]; then
   done
   docker-compose exec -T redis redis-cli FLUSHALL
   docker-compose exec -T -u root worker sh -c 'chown 1000 $LOG_DIR $VIDEO_DIR /tmp/mapset'
+  set +e
   docker-compose exec -T worker bash <<EOF
     pip install pytest-cov
     mkdir \$HOME/testenv
@@ -28,9 +29,10 @@ if [[ "$1" == "docker" ]]; then
     cp --recursive \$HOME/src /tmp/mapset /tmp/replay.osr /tmp/test /tmp/setup.cfg .
     python -m pytest --cov src $@
 EOF
+  exit="$?"
   docker-compose exec -T redis rm /data/appendonly.aof
   docker-compose down
-  exit 0
+  exit "$exit"
 else
   checked() {
     echo "$ $@"

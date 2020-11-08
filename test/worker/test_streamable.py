@@ -53,7 +53,7 @@ def test_upload(get, check_response, enqueue):
         auth=("u", "p"),
         params={"url": "a/foo.mp4", "title": "TITLE"},
     )
-    enqueue.assert_called_with(streamable._wait, "abc", video)
+    enqueue.assert_called_with(streamable._wait, "abc", video, s3=False)
 
 
 @patch("src.worker.streamable.logging.error")
@@ -98,7 +98,9 @@ def test_wait(warning, get, enqueue):
     get.return_value.ok = True
     get.return_value.json.side_effect = [{"status": 1}, {"status": 2}, {"status": 3}]
     streamable._wait("b", video)
-    enqueue.assert_called_with(streamable._wait, "b", video, wait=timedelta(seconds=30))
+    enqueue.assert_called_with(
+        streamable._wait, "b", video, s3=False, wait=timedelta(seconds=5)
+    )
     video.unlink.assert_not_called()
     streamable._wait("c", video)
     video.unlink.assert_called_with()

@@ -21,9 +21,12 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           cat > .env <<EOF
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           OSU_API_KEY=${{ secrets.OSU_API_KEY }}
           OSU_USERNAME=${{ secrets.OSU_USERNAME }}
           OSU_PASSWORD=${{ secrets.OSU_PASSWORD }}
+          S3_BUCKET=${{ secrets.S3_BUCKET }}
           STREAMABLE_USERNAME=${{ secrets.STREAMABLE_USERNAME }}
           STREAMABLE_PASSWORD=${{ secrets.STREAMABLE_PASSWORD }}
           EOF

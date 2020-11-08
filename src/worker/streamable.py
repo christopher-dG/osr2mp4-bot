@@ -77,7 +77,7 @@ def _wait(shortcode: str, video: Path, s3: bool = False) -> None:
     if status in [0, 1]:
         # Still in progress, so run this function again in a while.
         # In the meantime, exit so that the worker gets freed up.
-        enqueue(_wait, shortcode, video, s3=s3, wait=timedelta(seconds=30))
+        enqueue(_wait, shortcode, video, s3=s3, wait=timedelta(seconds=5))
     elif status == 2:
         # Upload is finished, we can delete the local file now.
         video.unlink()
