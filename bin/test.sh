@@ -45,8 +45,8 @@ else
   }
   exit=0
   python -m pytest --cov src
-  flake8 src test
-  black --check src test
+  flake8 bin src test
+  black --check bin src test
   mypy --strict src
   exit "$exit"
 fi
