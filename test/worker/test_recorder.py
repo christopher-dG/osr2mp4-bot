@@ -19,7 +19,7 @@ def test_e2e():
     video = recorder.record(mapset, replay)
     assert video.is_file()
     assert video.stat().st_size > 10_000_000
-    assert video.parent.as_posix() == os.environ["VIDEO_DIR"]
+    assert video.parent.as_posix() == os.environ["SHARE_DIR"]
     assert video.suffix == ".mp4"
     assert not mapset.exists()
     assert not replay.exists()
@@ -41,33 +41,32 @@ def test_e2e():
 
 
 @patch("src.worker.recorder.Osr2mp4")
-@patch("src.worker.recorder.mkstemp", return_value=(1, "/videos/foo.mp4"))
+@patch("src.worker.recorder.mkstemp", return_value=(1, "/share/foo.mp4"))
 @patch("src.worker.recorder.rmtree")
 @patch.dict(
     os.environ,
     {
         "HOSTNAME": "me",
-        "LOG_DIR": "/logs",
         "OSU_API_KEY": "abc",
         "OSU_SKIN_PATH": "/skin",
-        "VIDEO_DIR": "/videos",
+        "SHARE_DIR": "/share",
     },
 )
 def test_record(rmtree, mkstemp, osr2mp4):
     mapset = Path("a")
     replay = Mock(as_posix=lambda: "b")
     video = recorder.record(mapset, replay)
-    assert video == Path("/videos/foo.mp4")
+    assert video == Path("/share/foo.mp4")
     rmtree.assert_called_with(mapset)
     replay.unlink.assert_called_with()
     call = osr2mp4.mock_calls[0]
-    assert call.kwargs == {"logtofile": True, "logpath": "/logs/osr2mp4-me.log"}
+    assert call.kwargs == {"logtofile": True, "logpath": "/share/osr2mp4-me.log"}
     data, settings = call.args
     assert {
         ("Skin path", "/skin"),
         ("Default skin path", "/skin"),
         ("Beatmap path", "a"),
         (".osr path", "b"),
-        ("Output path", "/videos/foo.mp4"),
+        ("Output path", "/share/foo.mp4"),
     }.issubset(set(data.items()))
     assert settings["api key"] == "abc"

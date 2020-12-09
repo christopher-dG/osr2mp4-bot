@@ -1,5 +1,5 @@
-from ..worker import job
-from ..common import enqueue
+from ..worker.reddit import job
+from ..common.queue import enqueue
 
 from . import stream
 

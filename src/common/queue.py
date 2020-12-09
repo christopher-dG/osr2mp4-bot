@@ -1,9 +1,8 @@
 import os
 
 from datetime import timedelta
-from typing import Callable, Optional, cast
+from typing import Callable, Optional
 
-from praw.models import Comment
 from redis import Redis
 from rq import Queue
 
@@ -25,8 +24,3 @@ def enqueue(
         QUEUE.enqueue_in(wait, f, *args, **kwargs)
     else:
         QUEUE.enqueue(f, *args, **kwargs)
-
-
-def is_osubot_comment(comment: Comment) -> bool:
-    """Is this comment an osu!bot score post comment?"""
-    return cast(bool, comment.is_root and comment.author.name == "osu-bot")

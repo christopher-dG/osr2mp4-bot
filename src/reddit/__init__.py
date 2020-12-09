@@ -5,7 +5,7 @@ from typing import Iterable
 from praw import Reddit
 from praw.models import Comment
 
-from ..common import is_osubot_comment
+from ..common.reddit import is_osubot_comment
 
 REDDIT = Reddit(
     client_id=os.environ.get("REDDIT_CLIENT_ID", ""),

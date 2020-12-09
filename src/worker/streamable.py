@@ -10,11 +10,12 @@ import requests
 from requests import Response
 
 from . import ReplyWith
-from ..common import enqueue
+from ..common.queue import enqueue
 
 
 def upload(video: Path, title: str) -> str:
     """Upload `video` to Streamable."""
+    logging.info("Uploading...")
     # This technique comes from: https://github.com/adrielcafe/AndroidStreamable
     # We're not actually uploading the file ourselves,
     # just supplying a URL where it can find the video file.
@@ -37,7 +38,9 @@ def upload(video: Path, title: str) -> str:
     # we can't delete the video file yet, although we need to eventually.
     # Create a new job that handles that at some point in the future.
     enqueue(_wait, shortcode, video, s3=s3)
-    return f"https://streamable.com/{shortcode}"
+    url = f"https://streamable.com/{shortcode}"
+    logging.info(f"Video uploaded to {url}")
+    return url
 
 
 def _s3_upload(video: Path) -> str:

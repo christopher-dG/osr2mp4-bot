@@ -1,3 +1,4 @@
+import logging
 import os
 
 from io import BytesIO
@@ -12,19 +13,23 @@ from . import ReplyWith
 
 def download_mapset(mapset: int) -> Path:
     """Download and extract `mapset`, returning its path."""
+    logging.info("Downloading mapset...")
     content = _download(f"https://osu.ppy.sh/beatmapsets/{mapset}")
     out = mkdtemp()
     with ZipFile(BytesIO(content)) as f:
         f.extractall(out)
+    logging.info(f"Mapset downloaded to {out}")
     return Path(out)
 
 
 def download_replay(score: int) -> Path:
     """Download the replay for `score`, returning its path."""
+    logging.info("Downloading replay...")
     content = _download(f"https://osu.ppy.sh/scores/osu/{score}")
     _, out = mkstemp(suffix=".osr")
     with open(out, "wb") as f:
         f.write(content)
+    logging.info(f"Replay downloaded to {out}")
     return Path(out)
 
 

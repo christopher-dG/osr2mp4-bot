@@ -45,48 +45,11 @@ def test_parse_comment_e2e():
         submission=Mock(title="TITLE", comments=[osubot]),
     )
     for comment in [osubot, trigger]:
-        mapset, score, title = reddit.parse_comment(comment)
+        mapset, score, title, key = reddit._parse_comment(comment)
         assert mapset == 7671
         assert score == 3282835679
         assert title == "TITLE"
-
-
-@patch("src.worker.reddit._edit_osubot_comment")
-@patch("src.worker.reddit.is_osubot_comment", side_effect=[True, False])
-@patch("src.worker.reddit.reply")
-def test_success(reply, is_osubot_comment, edit_osubot_comment):
-    reddit.success(1, "a")
-    reply.assert_not_called()
-    edit_osubot_comment.assert_called_with(1, "a")
-    reddit.success(2, "b")
-    reply.assert_called_with(2, "Here you go: b")
-
-
-def test_reply():
-    comment = Mock()
-    reddit.reply(comment, "foo")
-    comment.reply.assert_called_with("foo")
-    ex = RedditAPIException([RedditErrorItem("a", "b"), RedditErrorItem("c", "d")])
-    comment.reply.side_effect = ex
-    with pytest.raises(RedditAPIException):
-        reddit.reply(comment, "bar")
-    ex.items[-1].error_type = "DELETED_COMMENT"
-    reddit.reply(comment, "bar")
-
-
-@patch("src.worker.reddit.is_osubot_comment", side_effect=[True, False])
-@patch("src.worker.reddit.reply")
-def test_failure(reply, is_osubot_comment):
-    reddit.failure(1)
-    reply.assert_not_called()
-    reddit.failure(2)
-    reply.assert_called_with(2, "Sorry, something unexpected went wrong.")
-
-
-def test_finished():
-    comment = Mock()
-    reddit.finished(comment)
-    comment.save.assert_called_with()
+        assert key == "score:3282835679"
 
 
 @patch("src.worker.reddit.is_osubot_comment", return_value=True)
@@ -181,6 +144,17 @@ def test_score_id(osu_api):
     assert reddit._score_id(7, 8, 9) == 1
 
 
+@patch("src.worker.reddit._edit_osubot_comment")
+@patch("src.worker.reddit.is_osubot_comment", side_effect=[True, False])
+@patch("src.worker.reddit._reply")
+def test_success(reply, is_osubot_comment, edit_osubot_comment):
+    reddit._success(1, "a")
+    reply.assert_not_called()
+    edit_osubot_comment.assert_called_with(1, "a")
+    reddit._success(2, "b")
+    reply.assert_called_with(2, "Here you go: b")
+
+
 @patch("src.worker.reddit.logging.info")
 @patch("src.worker.reddit._find_osubot_comment", side_effect=lambda x: x)
 def test_edit_osubot_comment(find_osubot_comment, info):
@@ -202,3 +176,30 @@ def test_edit_osubot_comment(find_osubot_comment, info):
     comment.refresh = lambda: None
     reddit._edit_osubot_comment(comment, "C")
     comment.edit.assert_called_with("a\n\nb\n\n[Streamable replay](C)\n\n***\n\nc")
+
+
+def test_reply():
+    comment = Mock()
+    reddit._reply(comment, "foo")
+    comment.reply.assert_called_with("foo")
+    ex = RedditAPIException([RedditErrorItem("a", "b"), RedditErrorItem("c", "d")])
+    comment.reply.side_effect = ex
+    with pytest.raises(RedditAPIException):
+        reddit._reply(comment, "bar")
+    ex.items[-1].error_type = "DELETED_COMMENT"
+    reddit._reply(comment, "bar")
+
+
+@patch("src.worker.reddit.is_osubot_comment", side_effect=[True, False])
+@patch("src.worker.reddit._reply")
+def test_failure(reply, is_osubot_comment):
+    reddit._failure(1)
+    reply.assert_not_called()
+    reddit._failure(2)
+    reply.assert_called_with(2, "Sorry, something unexpected went wrong.")
+
+
+def test_finished():
+    comment = Mock()
+    reddit._finished(comment)
+    comment.save.assert_called_with()

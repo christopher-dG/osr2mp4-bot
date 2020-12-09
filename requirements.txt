@@ -1,4 +1,6 @@
 boto3==1.16.13
+discord.py==1.5.1
+osrparse==3.0.0
 osuapi==0.0.42
 praw==7.1.0
 redis==3.5.3

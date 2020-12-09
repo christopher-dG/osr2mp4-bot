@@ -1,18 +1,18 @@
 import logging
-import os
 import re
 
 from typing import List, Tuple, cast
 
-from osuapi import OsuApi, OsuMod, ReqConnector
+from osuapi import OsuMod
 from praw.exceptions import RedditAPIException
 from praw.models import Comment
 
-from . import ReplyWith
-from ..common import is_osubot_comment
+from . import ReplyWith, before_job, main_job
+from .osu import download_replay
+from ..common import OSU_API
+from ..common.reddit import is_osubot_comment
 
 LINK_TEXT = "Streamable replay"
-OSU_API = OsuApi(os.environ.get("OSU_API_KEY", ""), connector=ReqConnector())
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")
 RE_PLAYER = re.compile(r"osu\.ppy\.sh/u/(\d+)")
 RE_LENGTH = re.compile(r"([\d:]{2,5}:\d{2})")
@@ -37,43 +37,35 @@ MODS = {
 }
 
 
-def parse_comment(comment: Comment) -> Tuple[int, int, str]:
+def job(comment: Comment) -> None:
+    """Main job for Reddit triggers."""
+    before_job()
+    sub = comment.submission
+    logging.info(f"Processing comment {comment.id} on {sub.id}: {sub.title}")
+    logging.info(f"Triggered by: /u/{comment.author}")
+    try:
+        mapset, score, title, key = _parse_comment(comment)
+        osr = download_replay(score)
+        url = main_job(mapset, osr, title, key)
+        _success(comment, url)
+    except ReplyWith as e:
+        if is_osubot_comment(comment):
+            logging.warning(e.msg)
+        else:
+            _reply(comment, e.msg)
+    except Exception:
+        _failure(comment)
+    finally:
+        _finished(comment)
+
+
+def _parse_comment(comment: Comment) -> Tuple[int, int, str, str]:
     """Try to extract `mapset`, `score`, `title` from the comment tree."""
     comment = _find_osubot_comment(comment)
     mapset, beatmap, player, mods = _parse_osubot_comment(comment.body)
     score = _score_id(beatmap, player, mods)
     title = comment.submission.title
-    return mapset, score, title
-
-
-def success(comment: Comment, url: str) -> None:
-    """Complete a successful job."""
-    if not is_osubot_comment(comment):
-        reply(comment, f"Here you go: {url}")
-    _edit_osubot_comment(comment, url)
-
-
-def reply(comment: Comment, msg: str) -> None:
-    """Reply to a comment, ignoring errors if the comment has been deleted."""
-    try:
-        comment.reply(msg)
-    except RedditAPIException as e:
-        for item in e.items:
-            if item.error_type == "DELETED_COMMENT":
-                break
-        else:
-            raise
-
-
-def failure(comment: Comment) -> None:
-    """Complete a failed job."""
-    if not is_osubot_comment(comment):
-        reply(comment, "Sorry, something unexpected went wrong.")
-
-
-def finished(comment: Comment) -> None:
-    """Complete a job regardless of its success or failure."""
-    comment.save()
+    return mapset, score, title, f"score:{score}"
 
 
 def _find_osubot_comment(comment: Comment) -> Comment:
@@ -162,6 +154,13 @@ def _score_id(beatmap: int, player: int, mods: int) -> int:
     return cast(int, score.score_id)
 
 
+def _success(comment: Comment, url: str) -> None:
+    """Complete a successful job."""
+    if not is_osubot_comment(comment):
+        _reply(comment, f"Here you go: {url}")
+    _edit_osubot_comment(comment, url)
+
+
 def _edit_osubot_comment(comment: Comment, url: str) -> None:
     """Add `url` to the score post comment."""
     comment = _find_osubot_comment(comment)
@@ -176,3 +175,27 @@ def _edit_osubot_comment(comment: Comment, url: str) -> None:
     lines = comment.body.splitlines()
     lines.insert(lines.index("***"), f"[{LINK_TEXT}]({url})\n")
     comment.edit("\n".join(lines))
+
+
+def _reply(comment: Comment, msg: str) -> None:
+    """Reply to a comment, ignoring errors if the comment has been deleted."""
+    logging.info(msg)
+    try:
+        comment.reply(msg)
+    except RedditAPIException as e:
+        for item in e.items:
+            if item.error_type == "DELETED_COMMENT":
+                break
+        else:
+            raise
+
+
+def _failure(comment: Comment) -> None:
+    """Complete a failed job."""
+    if not is_osubot_comment(comment):
+        _reply(comment, "Sorry, something unexpected went wrong.")
+
+
+def _finished(comment: Comment) -> None:
+    """Complete a job regardless of its success or failure."""
+    comment.save()
