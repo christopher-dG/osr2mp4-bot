@@ -1,13 +1,13 @@
 version: '3'
 services:
-  queue:
+  reddit:
     # Lists Reddit comments and sends relevant ones to the workers.
     build: .
     restart: unless-stopped
     env_file: .env
     depends_on:
       - redis
-    command: python -m src
+    command: python -m src.reddit
     environment:
       JOB_TIMEOUT: 1800
       REDIS_HOST: redis

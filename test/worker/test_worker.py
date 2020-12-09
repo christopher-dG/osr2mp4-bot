@@ -8,7 +8,7 @@ import pytest
 import requests
 
 from src import worker
-from src.queue import REDDIT
+from src.reddit import REDDIT
 from src.worker import ReplyWith
 
 from .. import has_reddit_creds, is_docker, mock_with_name

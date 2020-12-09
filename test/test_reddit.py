@@ -2,7 +2,7 @@ import os
 
 from unittest.mock import Mock, patch
 
-from src import queue
+from src import reddit
 
 from . import mock_with_name
 
@@ -26,7 +26,7 @@ REDDIT_ENV = {
 
 
 @patch.dict(os.environ, REDDIT_ENV)
-@patch("src.queue.REDDIT")
-def test_stream(reddit):
-    reddit.subreddit.return_value.stream.comments.return_value = COMMENTS
-    assert list(queue._stream()) == COMMENTS[:2]
+@patch("src.reddit.REDDIT")
+def test_stream(red):
+    red.subreddit.return_value.stream.comments.return_value = COMMENTS
+    assert list(reddit.stream()) == COMMENTS[:2]

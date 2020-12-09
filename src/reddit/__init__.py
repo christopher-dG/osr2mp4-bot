@@ -5,8 +5,7 @@ from typing import Iterable
 from praw import Reddit
 from praw.models import Comment
 
-from .worker import job
-from .common import enqueue, is_osubot_comment
+from ..common import is_osubot_comment
 
 REDDIT = Reddit(
     client_id=os.environ.get("REDDIT_CLIENT_ID", ""),
@@ -17,7 +16,7 @@ REDDIT = Reddit(
 )
 
 
-def _stream() -> Iterable[Comment]:
+def stream() -> Iterable[Comment]:
     """Generator for comments that should be reacted to."""
     for comment in REDDIT.subreddit("osugame").stream.comments():
         if comment.saved:
@@ -26,8 +25,3 @@ def _stream() -> Iterable[Comment]:
             yield comment
         elif f"u/{os.environ['REDDIT_USERNAME']} record" in comment.body:
             yield comment
-
-
-def main() -> None:
-    for comment in _stream():
-        enqueue(job, comment)
