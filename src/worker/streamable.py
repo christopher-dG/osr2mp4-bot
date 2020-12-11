@@ -10,7 +10,7 @@ import requests
 from requests import Response
 
 from . import ReplyWith
-from ..common.queue import enqueue
+from ..common.queue import DEFAULT, enqueue
 
 
 def upload(video: Path, title: str) -> str:
@@ -37,7 +37,7 @@ def upload(video: Path, title: str) -> str:
     # Because the response comes before the upload is actually finished,
     # we can't delete the video file yet, although we need to eventually.
     # Create a new job that handles that at some point in the future.
-    enqueue(_wait, shortcode, video, s3=s3)
+    enqueue(DEFAULT, _wait, shortcode, video, s3=s3)
     url = f"https://streamable.com/{shortcode}"
     logging.info(f"Video uploaded to {url}")
     return url
@@ -80,7 +80,7 @@ def _wait(shortcode: str, video: Path, s3: bool = False) -> None:
     if status in [0, 1]:
         # Still in progress, so run this function again in a while.
         # In the meantime, exit so that the worker gets freed up.
-        enqueue(_wait, shortcode, video, s3=s3, wait=timedelta(seconds=5))
+        enqueue(DEFAULT, _wait, shortcode, video, s3=s3, wait=timedelta(seconds=5))
     elif status == 2:
         # Upload is finished, we can delete the local file now.
         video.unlink()

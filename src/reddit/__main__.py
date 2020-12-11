@@ -1,8 +1,8 @@
 from ..worker.reddit import job
-from ..common.queue import enqueue
+from ..common.queue import REDDIT, enqueue
 
 from . import stream
 
 
 for comment in stream():
-    enqueue(job, comment)
+    enqueue(REDDIT, job, comment)

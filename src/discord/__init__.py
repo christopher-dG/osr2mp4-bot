@@ -15,7 +15,7 @@ from osrparse.replay import Replay
 from ..worker import ReplyWith
 from ..worker.discord import job
 from ..common.discord import failure, reply
-from ..common.queue import enqueue
+from ..common.queue import DISCORD, enqueue
 
 BOT = Bot(command_prefix="~")
 
@@ -40,7 +40,7 @@ async def osr2mp4(ctx: Context) -> None:
     except Exception:
         failure(message)
     else:
-        enqueue(job, message, path)
+        enqueue(DISCORD, job, message, path)
         reply(message, f"Queued, your job ID is `{osr.replay_hash}`.")
 
 

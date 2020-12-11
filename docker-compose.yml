@@ -33,7 +33,7 @@ services:
     depends_on:
       - files
       - redis
-    command: rq worker --with-scheduler --quiet --url redis://redis
+    command: rq worker --with-scheduler --quiet --url redis://redis reddit discord default
     environment:
       JOB_TIMEOUT: 1800
       REDIS_HOST: redis
