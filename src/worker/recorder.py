@@ -5,11 +5,14 @@ import sys
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkstemp
+from typing import List, Optional
 
 from osr2mp4.osr2mp4 import Osr2mp4
 
+from . import ReplyWith
 
-def record(mapset: Path, replay: Path) -> Path:
+
+def record(mapset: Path, replay: Path, skin: str = "CirclePeople") -> Path:
     """Record `replay` on `mapset`, returning the path to the video file."""
     logging.info("Recording...")
     # $SHARE_DIR must be served at $SERVER_ADDR, so that Streamable can read the file.
@@ -17,10 +20,10 @@ def record(mapset: Path, replay: Path) -> Path:
     _, output = mkstemp(dir=os.environ["SHARE_DIR"], suffix=".mp4")
     data = {
         "osu! path": "/",
-        "Skin path": os.environ["OSU_SKIN_PATH"],
+        "Skin path": find_skin(skin),
         "Beatmap path": mapset.as_posix(),
         ".osr path": replay.as_posix(),
-        "Default skin path": os.environ["OSU_SKIN_PATH"],
+        "Default skin path": find_skin("Default"),
         "Output path": output,
         "Width": 1920,
         "Height": 1080,
@@ -53,3 +56,14 @@ def record(mapset: Path, replay: Path) -> Path:
     replay.unlink()
     logging.info(f"Video recorded to {output}")
     return Path(output)
+
+
+def list_skins() -> List[str]:
+    """List all available skins."""
+    return os.listdir(os.environ["OSU_SKINS_DIR"])
+
+
+def find_skin(name: str) -> Optional[str]:
+    """Get the path to a skin."""
+    path = os.path.join(os.environ["OSU_SKINS_DIR"], name)
+    return path if os.path.isdir(path) else None

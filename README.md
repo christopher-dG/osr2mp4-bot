@@ -21,9 +21,10 @@ Environment variables that need to be set in `.env`:
 - `STREAMABLE_USERNAME`
 - `STREAMABLE_PASSWORD`
 - `SERVER_ADDR`
+- `DISCORD_TOKEN`
 
 ```sh
 docker-compose build
-docker-compose run -u root worker sh -c 'chown 1000 $LOG_DIR $VIDEO_DIR'
+docker-compose run -u root worker sh -c 'chown 1000 $SHARE_DIR'
 docker-compose up -d --scale worker=4
 ```

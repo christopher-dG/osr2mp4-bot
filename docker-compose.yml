@@ -1,11 +1,16 @@
 version: '3'
 services:
+  image:
+    build: .
+    image: osr2mp4-bot
+    command: 'true'
   reddit:
     # Lists Reddit comments and sends relevant ones to the workers.
-    build: .
+    image: osr2mp4-bot
     restart: unless-stopped
     env_file: .env
     depends_on:
+      - image
       - redis
     command: python -m src.reddit
     environment:
@@ -13,10 +18,11 @@ services:
       REDIS_HOST: redis
   discord:
     # Receives jobs from Discord messages.
-    build: .
+    image: osr2mp4-bot
     restart: unless-stopped
     env_file: .env
     depends_on:
+      - image
       - redis
     command: python -m src.discord
     environment:
@@ -27,11 +33,12 @@ services:
       - share:/tmp/share
   worker:
     # Receives jobs and does the recording work.
-    build: .
+    image: osr2mp4-bot
     restart: unless-stopped
     env_file: .env
     depends_on:
       - files
+      - image
       - redis
     command: rq worker --with-scheduler --quiet --url redis://redis reddit discord default
     environment:
