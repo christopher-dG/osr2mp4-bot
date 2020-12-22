@@ -24,6 +24,6 @@ Environment variables that need to be set in `.env`:
 
 ```sh
 docker-compose build
+docker-compose run -u root worker sh -c 'chown 1000 $LOG_DIR $VIDEO_DIR'
 docker-compose up -d --scale worker=4
-docker-compose exec -u root worker sh -c 'chown 1000 $LOG_DIR $VIDEO_DIR'
 ```
