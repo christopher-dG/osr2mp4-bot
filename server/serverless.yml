@@ -29,17 +29,19 @@ provider:
     S3_BUCKET: ${env:S3_BUCKET}
 functions:
   jobs:
-    handler: src.jobs.handler
+    handler: src.web.jobs.handler
     events:
       - http:
           path: jobs
           method: post
+    package: {}
   errors:
-    handler: src.errors.handler
+    handler: src.web.errors.handler
     events:
       - http:
           path: errors
           method: post
+    package: {}
   uploads:
     handler: src.uploads.handler
     events:
@@ -47,13 +49,13 @@ functions:
           bucket: ${env:S3_BUCKET}
           event: s3:ObjectCreated:CompleteMultipartUpload
           existing: true
+    package: {}
 resources:
   Resources:
     JobsQueue:
       Type: AWS::SQS::Queue
       Properties:
-        FifoQueue: true
-        VisibilityTimeout: 3600
+        VisibilityTimeout: 7200
     JobsTable:
       Type: AWS::DynamoDB::Table
       Properties:
