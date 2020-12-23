@@ -1,0 +1,20 @@
+version: '3'
+services:
+  discord:
+    build: .
+    restart: unless-stopped
+    command: python -m src.discord
+    environment:
+      ENDPOINT:
+      DISCORD_TOKEN:
+  reddit:
+    build: .
+    restart: unless-stopped
+    environment:
+      ENDPOINT:
+      REDDIT_USER_AGENT:
+      REDDIT_USERNAME:
+      REDDIT_PASSWORD:
+      REDDIT_CLIENT_ID:
+      REDDIT_CLIENT_SECRET:
+    command: python -m src.reddit

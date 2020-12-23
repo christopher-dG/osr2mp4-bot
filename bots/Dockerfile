@@ -7,4 +7,3 @@ RUN \
 USER bot
 COPY src/ /home/bot/src
 ENV PYTHONPATH /home/bot
-CMD python -m src
