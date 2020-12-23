@@ -1,0 +1,68 @@
+service: osr2mp4-bot
+plugins:
+  - serverless-python-requirements
+provider:
+  name: aws
+  runtime: python3.8
+  iamRoleStatements:
+    # TODO
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+        - s3:*
+        - sqs:*
+      Resource: '*'
+  environment:
+    JOBS_QUEUE: !Ref JobsQueue
+    JOBS_TABLE: !Ref JobsTable
+    DISCORD_TOKEN: ${env:DISCORD_TOKEN}
+    OSU_API_KEY: ${env:OSU_API_KEY}
+    OSU_USERNAME: ${env:OSU_USERNAME}
+    OSU_PASSWORD: ${env:OSU_PASSWORD}
+    REDDIT_USER_AGENT: ${env:REDDIT_USER_AGENT}
+    REDDIT_USERNAME: ${env:REDDIT_USERNAME}
+    REDDIT_PASSWORD: ${env:REDDIT_PASSWORD}
+    REDDIT_CLIENT_ID: ${env:REDDIT_CLIENT_ID}
+    REDDIT_CLIENT_SECRET: ${env:REDDIT_CLIENT_SECRET}
+    STREAMABLE_USERNAME: ${env:STREAMABLE_USERNAME}
+    STREAMABLE_PASSWORD: ${env:STREAMABLE_PASSWORD}
+    S3_BUCKET: ${env:S3_BUCKET}
+functions:
+  jobs:
+    handler: src.jobs.handler
+    events:
+      - http:
+          path: jobs
+          method: post
+  errors:
+    handler: src.errors.handler
+    events:
+      - http:
+          path: errors
+          method: post
+  uploads:
+    handler: src.uploads.handler
+    events:
+      - s3:
+          bucket: ${env:S3_BUCKET}
+          event: s3:ObjectCreated:CompleteMultipartUpload
+          existing: true
+resources:
+  Resources:
+    JobsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        FifoQueue: true
+        VisibilityTimeout: 3600
+    JobsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+         ReadCapacityUnits: 5
+         WriteCapacityUnits: 5

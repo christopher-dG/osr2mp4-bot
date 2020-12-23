@@ -1,8 +1,6 @@
 FROM python:3.8-slim
 ENV APT_PKGS build-essential git libavcodec-dev libavformat-dev libfreetype6-dev libjpeg-dev libswscale-dev zlib1g-dev
-ENV OSU_SKINS_DIR /home/bot/skins
 ENV OSR2MP4_REV 16c6920883cf7d60a853f2b38ed55a06633bab2c
-ENV PYTHONPATH /home/bot
 RUN \
   useradd --create-home --uid 1000 bot && \
   apt-get update && \
@@ -19,13 +17,20 @@ RUN \
   python setup.py build_ext --inplace && \
   mv /tmp/osr2mp4-core/osr2mp4 /home/bot/osr2mp4 && \
   chown --recursive bot /home/bot/osr2mp4
-COPY assets/skins $OSU_SKINS_DIR
 COPY requirements.txt /tmp/requirements.txt
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
+ENV AWS_ACCESS_KEY_ID $AWS_ACCESS_KEY_ID
+ENV AWS_SECRET_ACCESS_KEY $AWS_SECRET_ACCESS_KEY
+ENV AWS_DEFAULT_REGION us-east-1
 RUN \
-  chown --recursive bot $OSU_SKINS_DIR && \
-  pip install --requirement /tmp/requirements.txt && \
+  test -n $AWS_ACCESS_KEY_ID && \
+  test -n $AWS_SECRET_ACCESS_KEY && \
+  pip install --no-cache-dir --requirement /tmp/requirements.txt && \
   apt-get --yes remove $APT_PKGS && \
   apt-get --yes autoremove && \
   rm --recursive --force /tmp/*
 USER bot
 COPY src/ /home/bot/src
+ENV PYTHONPATH /home/bot
+CMD python -m src
