@@ -5,13 +5,19 @@ provider:
   name: aws
   runtime: python3.8
   iamRoleStatements:
-    # TODO
     - Effect: Allow
       Action:
-        - dynamodb:*
-        - s3:*
-        - sqs:*
-      Resource: '*'
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource: !GetAtt JobsTable.Arn
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+      Resource: arn:aws:s3:::${env:S3_BUCKET}/*
+    - Effect: Allow
+      Action: sqs:SendMessage
+      Resource: !GetAtt JobsQueue.Arn
   environment:
     JOBS_QUEUE: !Ref JobsQueue
     JOBS_TABLE: !Ref JobsTable
@@ -33,6 +39,9 @@ functions:
     events:
       - http:
           path: jobs
+          method: get
+      - http:
+          path: jobs
           method: post
     package: {}
   errors:
@@ -41,6 +50,13 @@ functions:
       - http:
           path: errors
           method: post
+    package: {}
+  queue:
+    handler: src.web.queue.handler
+    events:
+      - http:
+          path: queue
+          method: get
     package: {}
   uploads:
     handler: src.uploads.handler
@@ -52,6 +68,19 @@ functions:
     package: {}
 resources:
   Resources:
+    JobsQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref JobsQueue
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Action:
+                - sqs:DeleteMessage
+                - sqs:ReceiveMessage
+              Resource: !GetAtt JobsQueue.Arn
+              Principal: '*'
     JobsQueue:
       Type: AWS::SQS::Queue
       Properties:
