@@ -1,6 +1,10 @@
 service: osr2mp4-bot
 plugins:
   - serverless-python-requirements
+  - serverless-wsgi
+custom:
+  wsgi:
+    app: src.web.app
 provider:
   name: aws
   runtime: python3.8
@@ -34,29 +38,11 @@ provider:
     STREAMABLE_PASSWORD: ${env:STREAMABLE_PASSWORD}
     S3_BUCKET: ${env:S3_BUCKET}
 functions:
-  jobs:
-    handler: src.web.jobs.handler
+  web:
+    handler: wsgi_handler.handler
     events:
-      - http:
-          path: jobs
-          method: get
-      - http:
-          path: jobs
-          method: post
-    package: {}
-  errors:
-    handler: src.web.errors.handler
-    events:
-      - http:
-          path: errors
-          method: post
-    package: {}
-  queue:
-    handler: src.web.queue.handler
-    events:
-      - http:
-          path: queue
-          method: get
+      - http: ANY /
+      - http: ANY {proxy+}
     package: {}
   uploads:
     handler: src.uploads.handler
