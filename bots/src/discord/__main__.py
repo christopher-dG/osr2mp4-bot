@@ -22,9 +22,9 @@ async def osr2mp4(ctx: Context) -> None:
         return
     payload = {
         "trigger": "discord",
-        "channel": ctx.channel.id,
-        "message": ctx.message.id,
-        "osr": attachment.url,
+        "channel_id": ctx.channel.id,
+        "message_id": ctx.message.id,
+        "replay_url": attachment.url,
     }
     resp = requests.post(os.environ["ENDPOINT"], json=payload)
     if not resp.ok:

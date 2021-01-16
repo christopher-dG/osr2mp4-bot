@@ -11,8 +11,7 @@ from uuid import UUID
 
 import boto3
 
-from .discord import DiscordJob
-from .reddit import RedditJob
+from . import discord, reddit
 from .. import ReplyWith, s3
 
 
@@ -21,6 +20,7 @@ class Job:
     id: UUID
     beatmap_hash: str
     replay_hash: str
+    source: Dict[str, str]
     title: str = "Temp"
     skin: str = "CirclePeople"
     fps: int = 60
@@ -28,17 +28,27 @@ class Job:
     _QUEUE = boto3.resource("sqs").Queue(os.environ["JOBS_QUEUE"])
     _TABLE = boto3.resource("dynamodb").Table(os.environ["JOBS_TABLE"])
 
-    @classmethod
-    def new(cls, **kwargs: object) -> Optional[Job]:
-        try:
-            job = cls.create(**kwargs)
-        except ReplyWith as e:
-            cls.reply(e.msg, **kwargs)
-            return None
+    @staticmethod
+    def new(**kwargs: str) -> Optional[Job]:
+        trigger = kwargs["trigger"]
+        if trigger == "discord":
+            mod = discord
+        elif trigger == "reddit":
+            mod = reddit
         else:
+            logging.warning(f"Unrecognized trigger '{trigger}'")
+            return None
+        try:
+            job = mod.create_job(**kwargs)
+        except ReplyWith as e:
+            reply(kwargs, e.msg)
+        if job:
             job.save()
             job.send()
-            return job
+        return job
+
+    def reply(self, msg: str) -> None:
+        reply(self.source, msg)
 
     @staticmethod
     def get(id: str) -> Optional[Job]:
@@ -46,18 +56,7 @@ class Job:
         if not item:
             return None
         item["id"] = UUID(item)
-        for k, v in item.items():
-            if isinstance(v, Decimal):
-                item[k] = int(v)
-        type = item["source"]["type"]
-        if type == "discord":
-            cls = DiscordJob
-        elif type == "reddit":
-            cls = RedditJob
-        else:
-            logging.warning(f"Unknown job type {type}")
-            return None
-        return cls(**item)
+        return Job(**parse_ddb_item(item))  # type: ignore
 
     @property
     def urls(self) -> Dict[str, object]:
@@ -73,6 +72,7 @@ class Job:
             "id": str(self.id),
             "beatmap_hash": self.beatmap_hash,
             "replay_hash": self.replay_hash,
+            "source": self.source,
             "title": self.title,
             "skin": self.skin,
             "fps": self.fps,
@@ -86,3 +86,27 @@ class Job:
 
     def error(self, data: Dict[str, object]) -> None:
         pass
+
+
+def reply(source: Dict[str, str], msg: str) -> None:
+    source = source.copy()
+    trigger = source.pop("trigger")
+    if trigger == "discord":
+        mod = discord
+    elif trigger == "reddit":
+        mod = reddit
+    else:
+        logging.warning(f"Unrecognized trigger '{trigger}'")
+        return
+    mod.reply(msg, **source)
+
+
+def parse_ddb_item(item: object) -> object:
+    if isinstance(item, Decimal):
+        return int(item)
+    elif isinstance(item, list):
+        return [parse_ddb_item(x) for x in item]
+    elif isinstance(item, dict):
+        return {k: parse_ddb_item(v) for k, v in item.items()}
+    else:
+        return item
