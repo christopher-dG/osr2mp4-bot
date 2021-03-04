@@ -2,7 +2,7 @@ import logging
 import os
 import time
 
-from typing import Optional
+from typing import Optional, cast
 
 from redis import Redis
 
@@ -15,7 +15,7 @@ REDIS = Redis(os.getenv("REDIS_HOST", "localhost"))
 def get_video(score: int) -> Optional[str]:
     """Get the URL to a previously uploaded video of `score`."""
     _wait(score)
-    val = REDIS.get(f"{PREFIX}:{score}")
+    val = cast(Optional[bytes], REDIS.get(f"{PREFIX}:{score}"))
     return val.decode() if val else None
 
 
