@@ -16,7 +16,7 @@ OSU_API = OsuApi(os.environ.get("OSU_API_KEY", ""), connector=ReqConnector())
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")
 RE_PLAYER = re.compile(r"osu\.ppy\.sh/u/(\d+)")
 RE_LENGTH = re.compile(r"([\d:]{2,5}:\d{2})")
-RE_MODS = re.compile(r"\|\s+\+([A-Z]+)")
+RE_MODS = re.compile(r"osr2mp4-mods: \+([A-Z]+)")
 MODS = {
     "NF": 1 << 0,
     "EZ": 1 << 1,
@@ -127,8 +127,7 @@ def _parse_player(lines: List[str]) -> int:
 
 def _parse_mods(lines: List[str]) -> int:
     """Parse the mods."""
-    # This will only match if there's a second row in the beatmap stats.
-    match = RE_MODS.search(lines[6])
+    match = RE_MODS.search("\n".join(lines))
     mods = match[1] if match else ""
     # If there are no mods, 0 means nomod.
     return sum(MODS[mods[i : i + 2]] for i in range(0, len(mods), 2))  # noqa: E203

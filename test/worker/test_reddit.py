@@ -26,6 +26,7 @@ OSUBOT_COMMENT = """\
 ***
 
 ^(Ye XD – )[^Source](https://github.com/christopher-dG/osu-bot)^( | )[^Developer](https://reddit.com/u/PM_ME_DOG_PICS_PLS) [&nbsp;](http://x "Beatmap: Found in events
+osr2mp4-mods: +EZ
 .osu: Downloaded from S3")
 """  # noqa: E501
 
@@ -149,8 +150,14 @@ def test_parse_player():
 def test_parse_mods():
     lines = ["x" for i in range(20)]
     assert reddit._parse_mods(lines) == 0
-    lines[6] = "|   +HDDT   |"
+    lines[6] = "osr2mp4-mods: +HDDT"
     assert reddit._parse_mods(lines) == 72
+    lines[6] = 'osr2mp4-mods: +HDDT")'
+    assert reddit._parse_mods(lines) == 72
+    lines[6] = "osr2mp4-mods: "
+    assert reddit._parse_mods(lines) == 0
+    lines[6] = 'osr2mp4-mods: ")'
+    assert reddit._parse_mods(lines) == 0
 
 
 def test_check_not_unranked():
