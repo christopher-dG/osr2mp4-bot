@@ -1,7 +1,7 @@
 FROM python:3.8-slim
 ENV APT_PKGS build-essential git libavcodec-dev libavformat-dev libfreetype6-dev libjpeg-dev libswscale-dev unzip zlib1g-dev
 ENV OSU_SKIN_PATH /home/bot/skin
-ENV OSR2MP4_REV 7aaf33e7b4798634bb4151a8246dbf2d5ef49cf9
+ENV OSR2MP4_REV fb2c4ccd6236eab8c891d2c2d36eaf08f0005082
 ENV PYTHONPATH /home/bot
 RUN \
   useradd --create-home --uid 1000 bot && \
