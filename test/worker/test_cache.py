@@ -47,7 +47,7 @@ def test_set_video(set_video_progress, redis):
 @patch("src.worker.cache.REDIS")
 def test_set_video_progress(redis):
     cache.set_video_progress(1, True)
-    redis.set.assert_called_with("video:progress:1", "true", ex=1800)
+    redis.set.assert_called_with("video:progress:1", "true", ex=3600)
     redis.delete.assert_not_called()
     cache.set_video_progress(1, False)
     redis.delete.assert_called_with("video:progress:1")

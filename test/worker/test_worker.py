@@ -11,12 +11,12 @@ from src import worker
 from src.queue import REDDIT
 from src.worker import ReplyWith
 
-from .. import has_reddit_creds, is_docker, mock_with_name
+from .. import has_reddit_creds, has_s3_access, is_docker, mock_with_name
 
 
 @pytest.mark.skipif(
-    not is_docker() or not has_reddit_creds(),
-    reason="Needs Dockerized environment and Reddit credentials",
+    not is_docker() or not has_reddit_creds() or not has_s3_access(),
+    reason="Needs Dockerized environment, Reddit credentials, and S3 access",
 )
 @patch("src.worker.success")
 @patch("src.worker.failure")

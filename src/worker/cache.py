@@ -6,7 +6,7 @@ from typing import Optional, cast
 
 from redis import Redis
 
-JOB_TIMEOUT = int(os.getenv("JOB_TIMEOUT", "1800"))
+JOB_TIMEOUT = int(os.getenv("JOB_TIMEOUT", "3600"))
 PREFIX = "video"
 PROGRESS = "progress"
 REDIS = Redis(os.getenv("REDIS_HOST", "localhost"))

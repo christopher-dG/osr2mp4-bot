@@ -11,16 +11,18 @@ import requests
 
 from src.worker import ReplyWith, streamable
 
-from .. import has_streamable_creds, is_docker
+from .. import has_streamable_creds, has_test_video, is_docker
 
 
 @pytest.mark.skipif(
-    not is_docker() or not has_streamable_creds(),
-    reason="Needs Dockerized environment and Streamable credentials",
+    not is_docker() or not has_streamable_creds() or not has_test_video(),
+    reason="Needs Dockerized environment, Streamable credentials, and test video",
 )
-@patch.dict(os.environ, {"SERVER_ADDR": "https://radiantmediaplayer.com/media"})
+@patch.dict(
+    os.environ, {"SERVER_ADDR": f"https://{os.getenv('S3_BUCKET')}.s3.amazonaws.com"}
+)
 def test_e2e():
-    video = Path(mkdtemp()) / "big-buck-bunny-360p.mp4"
+    video = Path(mkdtemp()) / "test.mp4"
     video.touch()
     title = "DELETE ME"
     url = streamable.upload(video, title)
