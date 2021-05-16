@@ -1,4 +1,7 @@
 import logging
+import os
+
+import boto3
 
 from praw.models import Comment
 
@@ -10,7 +13,9 @@ class ReplyWith(Exception):
         self.msg = msg
 
 
-from .cache import get_video, set_video, set_video_progress  # noqa: E402
+from .cache import (  # noqa: E402
+    VideoInProgress, get_video, set_video, set_video_progress
+)
 from .osu import download_mapset, download_replay  # noqa: E402
 from .recorder import record  # noqa: E402
 from .reddit import failure, finished, parse_comment, reply, success  # noqa: E402
@@ -26,7 +31,12 @@ def job(comment: Comment) -> None:
     logging.info(f"Triggered by: /u/{comment.author}")
     try:
         mapset, score, title = parse_comment(comment)
-        video_url = get_video(score)
+        try:
+            video_url = get_video(score)
+        except VideoInProgress:
+            # The replay is being recorded somewhere else, so wait until it finishes.
+            q = boto3.resource("sqs").Queue(os.environ["SQS_QUEUE"])
+            q.send_message(MessageBody=comment.id, DelaySeconds=60)
         if video_url:
             logging.info(f"Found video in cache ({video_url})")
         else:

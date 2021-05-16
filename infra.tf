@@ -128,6 +128,15 @@ resource "aws_lambda_function" "fn" {
   }
 }
 
+resource "aws_sqs_queue" "lock" {
+  name = "${local.project_name}-lock"
+}
+
+resource "aws_lambda_event_source_mapping" {
+  event_source_arn = aws_sqs_queue.lock.arn
+  function_name    = aws_lambda_function.fn.arn
+}
+
 resource "aws_vpc" "vpc" {
   cidr_block = local.cidr_block
 }

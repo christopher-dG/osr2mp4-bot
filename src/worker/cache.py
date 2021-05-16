@@ -9,15 +9,17 @@ VIDEOS = boto3.resource("dynamodb").Table(os.environ["VIDEOS_TABLE_NAME"])
 PROGRESS = "progress"
 
 
+class VideoInProgress(Exception):
+    pass
+
+
 def get_video(score: int) -> Optional[str]:
     """Get the URL to a previously uploaded video of `score`."""
     item = VIDEOS.get_item(Key={"id": score}).get("Item")
     if not item:
         return None
     if item.get(PROGRESS):
-        # TOOD: Exit but jump back here in a little while.
-        logging.info(f"Video for score {score} is in progress...")
-        raise Exception("TODO")
+        raise VideoInProgress(score)
     return item["url"]
 
 
