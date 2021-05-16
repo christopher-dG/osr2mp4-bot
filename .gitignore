@@ -2,6 +2,7 @@
 .env
 .mypy_cache/
 .pytest_cache/
+.terraform/
 __pycache__/
 htmlcov/
 data/*
