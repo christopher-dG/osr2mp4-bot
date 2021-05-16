@@ -3,16 +3,15 @@ import sys
 
 from pathlib import Path
 from shutil import rmtree
-from tempfile import mkstemp
+from tempfile import gettempdir, mkstemp
 
 from osr2mp4.osr2mp4 import Osr2mp4
 
 
 def record(mapset: Path, replay: Path) -> Path:
     """Record `replay` on `mapset`, returning the path to the video file."""
-    # $VIDEO_DIR must be served at $SERVER_ADDR, so that Streamable can read the file.
-    # It's taken care of in Docker Compose.
-    _, output = mkstemp(dir=os.environ["VIDEO_DIR"], suffix=".mp4")
+    os.chdir(gettempdir())  # osr2mp4 tries to write to the working directory on error.
+    _, output = mkstemp(dir=os.environ["FS_ROOT"], suffix=".mp4")
     data = {
         "osu! path": "/",
         "Skin path": os.environ["OSU_SKIN_PATH"],
@@ -37,12 +36,10 @@ def record(mapset: Path, replay: Path) -> Path:
         "Use FFmpeg video writer": True,
         "api key": os.environ["OSU_API_KEY"],
     }
-    # This variable will generally only be set in Docker.
-    hostname = os.getenv("HOSTNAME", "unknown")
-    logs = os.path.join(os.environ["LOG_DIR"], f"osr2mp4-{hostname}.log")
     # Stop the `Osr2mp4` constructor from replacing `sys.excepthook`.
     hook = sys.excepthook
-    osr = Osr2mp4(data, settings, logtofile=True, logpath=logs)
+    # TODO: Might want to log to /dev/null or an actual file.
+    osr = Osr2mp4(data, settings)
     sys.excepthook = hook
     osr.startall()
     osr.joinall()

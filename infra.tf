@@ -6,6 +6,10 @@ variable "availability_zone_suffix" {
   default = "a"
 }
 
+variable "s3_bucket" {
+  default = "cdg-osr2mp4"
+}
+
 terraform {
   required_providers {
     aws = {
@@ -37,6 +41,19 @@ locals {
   cidr_block        = "10.0.0.0/28"
   fs_root           = "/mnt/efs"
   project_name      = "osr2mp4"
+}
+
+resource "aws_s3_bucket" "bucket" {
+  bucket = var.s3_bucket
+
+  lifecycle_rule {
+    enabled = true
+    prefix  = "mp4/"
+
+    expiration {
+      days = 1
+    }
+  }
 }
 
 resource "aws_ecr_repository" "repo" {
