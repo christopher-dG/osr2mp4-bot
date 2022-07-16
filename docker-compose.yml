@@ -7,7 +7,9 @@ services:
     env_file: .env
     depends_on:
       - redis
-    command: python -m src
+    # command: python -m src
+    volumes:
+      - ./src:/home/bot/src:delegated
     environment:
       JOB_TIMEOUT: 3600
       REDIS_HOST: redis
@@ -17,28 +19,15 @@ services:
     restart: unless-stopped
     env_file: .env
     depends_on:
-      - files
       - redis
-    command: rq worker --with-scheduler --quiet --url redis://redis
+    # command: rq worker --with-scheduler --quiet --url redis://redis
     environment:
-      JOB_TIMEOUT: 3600
+      JOB_TIMEOUT: 1800
       LOG_DIR: /tmp/logs
       REDIS_HOST: redis
-      VIDEO_DIR: /tmp/videos
     volumes:
       - ${PWD}/logs:/tmp/logs
-      - videos:/tmp/videos
-  files:
-    # Publically accessible file server where Streamable can read videos from.
-    image: halverneus/static-file-server:v1.8.1
-    restart: unless-stopped
-    environment:
-      FOLDER: /data
-      PORT: 8080
-    volumes:
-      - videos:/data
-    ports:
-      - ${SERVER_PORT:-80}:8080
+      - ./src:/home/bot/src:delegated
   redis:
     # Job queue backend and persistent storage service.
     image: redis:6
@@ -46,5 +35,3 @@ services:
     command: --appendonly yes --loglevel warning
     volumes:
       - ${PWD}/data:/data
-volumes:
-  videos:
