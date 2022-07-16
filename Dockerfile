@@ -1,5 +1,4 @@
 FROM python:3.8-slim
-ENV APT_PKGS unzip
 ENV PYTHONPATH /home/bot
 RUN useradd --create-home --uid 1000 bot
 COPY requirements.txt /tmp/requirements.txt
