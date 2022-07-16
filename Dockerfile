@@ -6,4 +6,5 @@ RUN \
   pip install --requirement /tmp/requirements.txt && \
   rm --recursive --force /tmp/*
 USER bot
+COPY src/ /home/bot/src
 CMD [ "tail", "-f", "/dev/null" ]
