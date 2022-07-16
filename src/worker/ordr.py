@@ -20,16 +20,16 @@ def submit_replay(replayFile: Path, skin: int = 3) -> str:
     multipart_form_data = {
         'replayFile': ('replay.osr', replayFile.open('rb')),
         'username': (None, 'osu-bot'),
-        'resolution': (None, '1920x1080'),
+        'resolution': (None, '1280x720'),
         'skin': (None, skin),
         'verificationKey': (None, ORDR_API_KEY),
     }
-    resp = requests.post('https://ordr-api.issou.best/renders', files=multipart_form_data)
+    resp = requests.post('https://apis.issou.best/ordr/renders', files=multipart_form_data)
     resp_json = resp.json()
     return resp_json['renderID'] if 'renderID' in resp_json.keys() else None
 
 def wait_and_set_video_url(score: int, renderId: str, comment: Comment) -> None:
-    resp = requests.get(f"https://ordr-api.issou.best/renders?renderID={renderId}")
+    resp = requests.get(f"https://apis.issou.best/ordr/renders?renderID={renderId}")
     try:
         resp_json = resp.json()
         render_result = resp_json['renders'][0]
