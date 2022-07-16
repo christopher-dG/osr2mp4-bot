@@ -7,7 +7,7 @@ services:
     env_file: .env
     depends_on:
       - redis
-    # command: python -m src
+    command: python -m src
     volumes:
       - ./src:/home/bot/src:delegated
     environment:
@@ -20,7 +20,7 @@ services:
     env_file: .env
     depends_on:
       - redis
-    # command: rq worker --with-scheduler --quiet --url redis://redis
+    command: rq worker --with-scheduler --quiet --url redis://redis
     environment:
       JOB_TIMEOUT: 1800
       LOG_DIR: /tmp/logs
