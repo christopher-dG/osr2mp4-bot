@@ -42,7 +42,6 @@ def job(comment: Comment) -> None:
         if is_osubot_comment(comment):
             logging.warning(e.msg)
         else:
-            logging.warning(comment, e.msg)
             reply(comment, e.msg)
     except Exception:
         logging.exception("Something failed...")
