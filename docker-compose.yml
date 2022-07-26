@@ -13,6 +13,19 @@ services:
     environment:
       JOB_TIMEOUT: 3600
       REDIS_HOST: redis
+  websocket:
+    # Lists Reddit comments and sends relevant ones to the workers.
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - redis
+    command: python -m src.websocket
+    volumes:
+      - ./src:/home/bot/src:delegated
+    environment:
+      JOB_TIMEOUT: 3600
+      REDIS_HOST: redis
   worker:
     # Receives jobs and does the recording work.
     build: .

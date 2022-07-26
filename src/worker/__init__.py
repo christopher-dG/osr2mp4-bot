@@ -10,10 +10,10 @@ class ReplyWith(Exception):
         self.msg = msg
 
 
-from .cache import get_video, set_video_progress  # noqa: E402
+from .cache import get_video, set_active_render, set_video_progress  # noqa: E402
 from .osu import download_replay  # noqa: E402
 from .reddit import failure, finished, parse_comment, reply, success  # noqa: E402
-from src.worker.ordr import wait_and_set_video_url, submit_replay
+from src.worker.ordr import delete_replay, wait_and_set_video_url, submit_replay
 
 
 def job(comment: Comment) -> None:
@@ -36,8 +36,10 @@ def job(comment: Comment) -> None:
             logging.info(f"Replay downloaded to {replay_path}")
             logging.info("Submitting Replay to o!rdr...")
             renderId = submit_replay(replay_path)
+            set_active_render(renderId)
             logging.info("Replay submitted to o!rdr - waiting for video url")
             wait_and_set_video_url(score, renderId, comment)
+            delete_replay(replay_path)
     except ReplyWith as e:
         if is_osubot_comment(comment):
             logging.warning(e.msg)
@@ -47,9 +49,4 @@ def job(comment: Comment) -> None:
         logging.exception("Something failed...")
         failure(comment)
     finally:
-        try:
-            set_video_progress(score, False)
-        except NameError:
-            # If something failed in parse_comment, there's no score ID.
-            pass
         finished(comment)

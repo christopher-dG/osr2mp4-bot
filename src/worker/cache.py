@@ -9,6 +9,7 @@ from redis import Redis
 JOB_TIMEOUT = int(os.getenv("JOB_TIMEOUT", "3600"))
 PREFIX = "video"
 PROGRESS = "progress"
+RENDER = "render"
 REDIS = Redis(os.getenv("REDIS_HOST", "localhost"))
 
 
@@ -23,6 +24,27 @@ def set_video(score: int, url: str) -> None:
     """Set the URL of `score` to `url`."""
     REDIS.set(f"{PREFIX}:{score}", url)
     set_video_progress(score, False)
+
+
+def set_active_render(renderId: str) -> None:
+    """Mark an o!rdr as being currently or no longer in progress."""
+    REDIS.set(f"{RENDER}:{renderId}", "true", ex=JOB_TIMEOUT)
+
+
+def is_render_active(renderId: str) -> bool:
+    """Check if the o!rdr render is actually part of the import"""
+    if not REDIS.get(f"{RENDER}:{renderId}"):
+        return False
+    return True
+
+
+def set_render_id(renderId: str, url: str) -> None:
+    REDIS.set(f"{PREFIX}:{RENDER}:{renderId}", url, ex=JOB_TIMEOUT)
+
+
+def get_render_id(renderId: str) -> Optional[str]:
+    url = REDIS.get(f"{PREFIX}:{RENDER}:{renderId}")
+    return None if url is None else url.decode()
 
 
 def set_video_progress(score: int, status: bool) -> None:
