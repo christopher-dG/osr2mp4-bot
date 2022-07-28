@@ -14,7 +14,7 @@ services:
       JOB_TIMEOUT: 3600
       REDIS_HOST: redis
   websocket:
-    # Lists Reddit comments and sends relevant ones to the workers.
+    # Receives render updates from o!rdr
     build: .
     restart: unless-stopped
     env_file: .env

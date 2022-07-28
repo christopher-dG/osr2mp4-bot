@@ -10,15 +10,6 @@ from requests import Session
 from . import ReplyWith
 
 
-def download_mapset(mapset: int) -> Path:
-    """Download and extract `mapset`, returning its path."""
-    content = _download(f"https://osu.ppy.sh/beatmapsets/{mapset}")
-    out = mkdtemp()
-    with ZipFile(BytesIO(content)) as f:
-        f.extractall(out)
-    return Path(out)
-
-
 def download_replay(score: int) -> Path:
     """Download the replay for `score`, returning its path."""
     content = _download(f"https://osu.ppy.sh/scores/osu/{score}")
