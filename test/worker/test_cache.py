@@ -31,6 +31,37 @@ def test_e2e():
 
 
 @patch("src.worker.cache.REDIS")
+@patch("src.worker.cache.JOB_TIMEOUT", 1)
+def test_active_render(redis):
+    cache.set_active_render(1)
+    redis.set.assert_called_once_with("render:1", "true", ex=1)
+    redis.get.side_effect = [None, False, "true"]
+    res = cache.is_render_active(1)
+    redis.get.assert_called_once_with("render:1")
+    assert res == False
+    res = cache.is_render_active(1)
+    assert res == False
+    res = cache.is_render_active(1)
+    assert res == True
+    assert redis.get.call_count == 3
+
+
+@patch("src.worker.cache.REDIS")
+@patch("src.worker.cache.JOB_TIMEOUT", 1)
+def test_get_set_render_id(redis):
+    url = 'https://ko-fi.com/wiekus'
+    cache.set_render_id(1, url)
+    redis.set.assert_called_once_with("video:render:1", url, ex=1)
+    redis.get.side_effect = [None, url.encode()]
+    res = cache.get_render_id(1)
+    redis.get.assert_called_once_with("video:render:1")
+    assert res == None
+    res = cache.get_render_id(1)
+    assert res == url
+    assert redis.get.call_count == 2
+
+
+@patch("src.worker.cache.REDIS")
 @patch("src.worker.cache._wait")
 def test_get_video(wait, redis):
     redis.get.side_effect = [b"abc", None]
