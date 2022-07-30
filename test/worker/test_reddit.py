@@ -5,7 +5,7 @@ import pytest
 from osuapi import OsuMod
 from praw.exceptions import RedditAPIException, RedditErrorItem
 
-from src.worker import ReplyWith, cache, reddit
+from src.worker import ReplyWith, reddit
 
 from .. import has_osu_api_creds, mock_with_name
 

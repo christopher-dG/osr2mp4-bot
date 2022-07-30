@@ -1,9 +1,7 @@
 import os
 
-from io import BytesIO
 from pathlib import Path
-from tempfile import mkdtemp, mkstemp
-from zipfile import ZipFile
+from tempfile import mkstemp
 
 from requests import Session
 

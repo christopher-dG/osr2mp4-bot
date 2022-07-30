@@ -12,10 +12,12 @@ from src.worker.cache import get_render_id, is_render_active
 
 from .. import has_reddit_creds, is_docker, mock_with_name
 
+
 @pytest.fixture(autouse=True)
 def before_each():
-	cache.REDIS.flushall()
-	cache.REDIS.flushdb()
+    cache.REDIS.flushall()
+    cache.REDIS.flushdb()
+
 
 @pytest.mark.skipif(
     not is_docker() or not has_reddit_creds(),
@@ -34,9 +36,8 @@ def test_job_e2e(info):
         if "Replay downloaded to" in call.args[0]:
             ok[0] = True
         if "Replay submitted to o!rdr" in call.args[0]:
-            render_id = call.args[0].split('(')[1].split(')')[0]
-            print(f"render_id {render_id}")
-            ok[1] = is_render_active(render_id) == True
+            render_id = call.args[0].split("(")[1].split(")")[0]
+            ok[1] = is_render_active(render_id) is True
     for i in range(60):
         time.sleep(1)
         if all(ok) and get_render_id(render_id):

@@ -8,10 +8,12 @@ from src.worker import cache
 
 from .. import is_docker
 
+
 @pytest.fixture(autouse=True)
 def before_each():
-	cache.REDIS.flushall()
-	cache.REDIS.flushdb()
+    cache.REDIS.flushall()
+    cache.REDIS.flushdb()
+
 
 @pytest.mark.skipif(not is_docker(), reason="Needs Redis server")
 @patch("src.worker.cache.JOB_TIMEOUT", 1)
@@ -38,24 +40,24 @@ def test_active_render(redis):
     redis.get.side_effect = [None, False, "true"]
     res = cache.is_render_active(1)
     redis.get.assert_called_once_with("render:1")
-    assert res == False
+    assert res is False
     res = cache.is_render_active(1)
-    assert res == False
+    assert res is False
     res = cache.is_render_active(1)
-    assert res == True
+    assert res is True
     assert redis.get.call_count == 3
 
 
 @patch("src.worker.cache.REDIS")
 @patch("src.worker.cache.JOB_TIMEOUT", 1)
 def test_get_set_render_id(redis):
-    url = 'https://ko-fi.com/wiekus'
+    url = "https://ko-fi.com/wiekus"
     cache.set_render_id(1, url)
     redis.set.assert_called_once_with("video:render:1", url, ex=1)
     redis.get.side_effect = [None, url.encode()]
     res = cache.get_render_id(1)
     redis.get.assert_called_once_with("video:render:1")
-    assert res == None
+    assert res is None
     res = cache.get_render_id(1)
     assert res == url
     assert redis.get.call_count == 2
