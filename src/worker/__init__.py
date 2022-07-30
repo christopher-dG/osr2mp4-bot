@@ -13,7 +13,11 @@ class ReplyWith(Exception):
 from .cache import get_video, set_active_render, set_video_progress  # noqa: E402
 from .osu import download_replay  # noqa: E402
 from .reddit import failure, finished, parse_comment, reply, success  # noqa: E402
-from src.worker.ordr import delete_replay, wait_and_set_video_url, submit_replay  # noqa: E402,E501
+from src.worker.ordr import (  # noqa: E402,E501
+    delete_replay,
+    wait_and_set_video_url,
+    submit_replay,
+)
 
 
 def job(comment: Comment) -> None:
@@ -36,6 +40,8 @@ def job(comment: Comment) -> None:
             logging.info(f"Replay downloaded to {replay_path}")
             logging.info("Submitting Replay to o!rdr...")
             render_id = submit_replay(replay_path)
+            if not render_id:
+                raise ReplyWith("o!rdr replay rendering failed, no render id")
             set_active_render(render_id)
             logging.info(
                 f"Replay submitted to o!rdr ({render_id}) - waiting for video url"

@@ -20,9 +20,7 @@ def on_render_done(data: Any) -> None:
     try:
         if is_render_active(data["renderID"]):
             set_render_id(data["renderID"], data["videoUrl"])
-            logging.info(
-                f"Got video url (id:{data['renderID']}) - {data['videoUrl']}"
-            )
+            logging.info(f"Got video url (id:{data['renderID']}) - {data['videoUrl']}")
     except Exception:
         logging.exception(
             f"o!rdr websocket: error handling render finished - data: {data}"
