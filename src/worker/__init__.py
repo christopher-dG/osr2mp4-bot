@@ -35,10 +35,10 @@ def job(comment: Comment) -> None:
             replay_path = download_replay(score)
             logging.info(f"Replay downloaded to {replay_path}")
             logging.info("Submitting Replay to o!rdr...")
-            renderId = submit_replay(replay_path)
-            set_active_render(renderId)
-            logging.info("Replay submitted to o!rdr - waiting for video url")
-            wait_and_set_video_url(score, renderId, comment)
+            render_id = submit_replay(replay_path)
+            set_active_render(render_id)
+            logging.info(f"Replay submitted to o!rdr ({render_id}) - waiting for video url")
+            wait_and_set_video_url(score, render_id, comment)
             delete_replay(replay_path)
     except ReplyWith as e:
         if is_osubot_comment(comment):
