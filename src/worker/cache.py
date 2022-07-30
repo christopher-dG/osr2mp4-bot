@@ -26,24 +26,24 @@ def set_video(score: int, url: str) -> None:
     set_video_progress(score, False)
 
 
-def set_active_render(renderId: str) -> None:
+def set_active_render(render_id: str) -> None:
     """Mark an o!rdr as being currently or no longer in progress."""
-    REDIS.set(f"{RENDER}:{renderId}", "true", ex=JOB_TIMEOUT)
+    REDIS.set(f"{RENDER}:{render_id}", "true", ex=JOB_TIMEOUT)
 
 
-def is_render_active(renderId: str) -> bool:
+def is_render_active(render_id: str) -> bool:
     """Check if the o!rdr render is actually part of the import"""
-    if not REDIS.get(f"{RENDER}:{renderId}"):
+    if not REDIS.get(f"{RENDER}:{render_id}"):
         return False
     return True
 
 
-def set_render_id(renderId: str, url: str) -> None:
-    REDIS.set(f"{PREFIX}:{RENDER}:{renderId}", url, ex=JOB_TIMEOUT)
+def set_render_id(render_id: str, url: str) -> None:
+    REDIS.set(f"{PREFIX}:{RENDER}:{render_id}", url, ex=JOB_TIMEOUT)
 
 
-def get_render_id(renderId: str) -> Optional[str]:
-    url = REDIS.get(f"{PREFIX}:{RENDER}:{renderId}")
+def get_render_id(render_id: str) -> Optional[str]:
+    url = REDIS.get(f"{PREFIX}:{RENDER}:{render_id}")
     return None if url is None else url.decode()
 
 

@@ -16,9 +16,9 @@ ORDR_API_KEY = os.environ.get("ORDR_API_KEY", "")
 fmt = "%(asctime)s %(levelname)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=fmt)
 
-def submit_replay(replayFile: Path, skin: int = 3) -> str:
+def submit_replay(replay_file: Path, skin: int = 3) -> str:
     multipart_form_data = {
-        'replayFile': ('replay.osr', replayFile.open('rb')),
+        'replayFile': ('replay.osr', replay_file.open('rb')),
         'username': (None, 'osu-bot'),
         'resolution': (None, '1280x720'),
         'skin': (None, skin),
@@ -28,12 +28,12 @@ def submit_replay(replayFile: Path, skin: int = 3) -> str:
     resp_json = resp.json()
     return resp_json['renderID'] if 'renderID' in resp_json.keys() else None
 
-def delete_replay(replayFile: Path) -> None:
-    replayFile.unlink(missing_ok=True)
+def delete_replay(replay_file: Path) -> None:
+    replay_file.unlink(missing_ok=True)
 
-def wait_and_set_video_url(score: int, renderId: str, comment: Comment) -> None:
+def wait_and_set_video_url(score: int, render_id: str, comment: Comment) -> None:
     try:
-        video_url = get_render_id(renderId)
+        video_url = get_render_id(render_id)
         if (video_url):
             logging.info(f"Got video url from o!rdr ws - {video_url}")
             
@@ -45,6 +45,6 @@ def wait_and_set_video_url(score: int, renderId: str, comment: Comment) -> None:
             success(comment, video_url)
             return set_video_progress(score, False)
 
-        enqueue(wait_and_set_video_url, score, renderId, comment, wait=timedelta(seconds=2))
+        enqueue(wait_and_set_video_url, score, render_id, comment, wait=timedelta(seconds=2))
     except Exception as e:
         logging.warning(f"waiting for video url failed: {e}")
