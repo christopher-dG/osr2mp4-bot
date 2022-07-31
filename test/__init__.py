@@ -1,9 +1,6 @@
 import os
 
 from unittest.mock import Mock
-from uuid import uuid4
-
-import boto3
 
 
 def mock_with_name(name):
@@ -32,37 +29,6 @@ def has_reddit_creds():
         "REDDIT_PASSWORD",
         "REDDIT_USER_AGENT",
     )
-
-
-def has_streamable_creds():
-    return _has_env_vars("STREAMABLE_USERNAME", "STREAMABLE_PASSWORD")
-
-
-def has_test_video():
-    bucket = os.getenv("S3_BUCKET")
-    if not bucket:
-        return False
-    s3 = boto3.client("s3")
-    try:
-        s3.head_object(Bucket=bucket, Key="test.mp4")
-        return True
-    except Exception:
-        return False
-
-
-def has_s3_access():
-    bucket = os.getenv("S3_BUCKET")
-    if not bucket:
-        return False
-    s3 = boto3.client("s3")
-    key = str(uuid4())
-    try:
-        s3.put_object(Bucket=bucket, Key=key, Body=b"x")
-        s3.get_object(Bucket=bucket, Key=key)
-        s3.delete_object(Bucket=bucket, Key=key)
-        return True
-    except Exception:
-        return False
 
 
 def _has_env_vars(*keys):

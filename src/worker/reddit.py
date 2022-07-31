@@ -11,7 +11,7 @@ from praw.models import Comment
 from . import ReplyWith
 from ..common import is_osubot_comment
 
-LINK_TEXT = "Streamable replay"
+LINK_TEXT = "Video replay"
 OSU_API = OsuApi(os.environ.get("OSU_API_KEY", ""), connector=ReqConnector())
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")
 RE_PLAYER = re.compile(r"osu\.ppy\.sh/u/(\d+)")

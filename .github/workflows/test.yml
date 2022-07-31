@@ -34,5 +34,6 @@ jobs:
           S3_BUCKET=${{ secrets.S3_BUCKET }}
           STREAMABLE_USERNAME=${{ secrets.STREAMABLE_USERNAME }}
           STREAMABLE_PASSWORD=${{ secrets.STREAMABLE_PASSWORD }}
+          ORDR_API_KEY=${{ secrets.ORDR_API_KEY }}
           EOF
       - run: ./bin/test.sh docker

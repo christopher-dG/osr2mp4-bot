@@ -10,11 +10,14 @@ class ReplyWith(Exception):
         self.msg = msg
 
 
-from .cache import get_video, set_video, set_video_progress  # noqa: E402
-from .osu import download_mapset, download_replay  # noqa: E402
-from .recorder import record  # noqa: E402
+from .cache import get_video, set_active_render, set_video_progress  # noqa: E402
+from .osu import download_replay  # noqa: E402
 from .reddit import failure, finished, parse_comment, reply, success  # noqa: E402
-from .streamable import upload  # noqa: E402
+from src.worker.ordr import (  # noqa: E402,E501
+    delete_replay,
+    wait_and_set_video_url,
+    submit_replay,
+)
 
 
 def job(comment: Comment) -> None:
@@ -29,23 +32,22 @@ def job(comment: Comment) -> None:
         video_url = get_video(score)
         if video_url:
             logging.info(f"Found video in cache ({video_url})")
+            success(comment, video_url)
         else:
             set_video_progress(score, True)
-            logging.info(f"mapset={mapset}, score={score}")
-            logging.info("Downloading mapset...")
-            mapset_path = download_mapset(mapset)
-            logging.info(f"Mapset downloaded to {mapset_path}")
             logging.info("Downloading replay...")
             replay_path = download_replay(score)
             logging.info(f"Replay downloaded to {replay_path}")
-            logging.info("Recording...")
-            video_path = record(mapset_path, replay_path)
-            logging.info(f"Video recorded to {video_path}")
-            logging.info("Uploading...")
-            video_url = upload(video_path, title)
-            logging.info(f"Video uploaded to {video_url}")
-            set_video(score, video_url)
-        success(comment, video_url)
+            logging.info("Submitting Replay to o!rdr...")
+            render_id = submit_replay(replay_path)
+            if not render_id:
+                raise ReplyWith("o!rdr replay rendering failed, no render id")
+            set_active_render(render_id)
+            logging.info(
+                f"Replay submitted to o!rdr ({render_id}) - waiting for video url"
+            )
+            wait_and_set_video_url(score, render_id, comment)
+            delete_replay(replay_path)
     except ReplyWith as e:
         if is_osubot_comment(comment):
             logging.warning(e.msg)
@@ -55,9 +57,4 @@ def job(comment: Comment) -> None:
         logging.exception("Something failed...")
         failure(comment)
     finally:
-        try:
-            set_video_progress(score, False)
-        except NameError:
-            # If something failed in parse_comment, there's no score ID.
-            pass
         finished(comment)
