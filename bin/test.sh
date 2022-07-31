@@ -12,6 +12,9 @@ if [[ "$1" == "docker" ]]; then
     cp data/appendonly.aof "$backup"
   fi
   docker-compose up --build --detach worker
+  for file in setup.cfg test; do
+    docker cp "$file" "osr2mp4-bot-test_worker_1:/tmp/$(basename $file)"
+  done
   docker-compose exec -T redis redis-cli FLUSHALL
   docker-compose exec -T -u root worker sh -c 'chown 1000 $LOG_DIR $VIDEO_DIR'
   set +e
