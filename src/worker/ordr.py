@@ -3,6 +3,7 @@ import os
 
 from datetime import timedelta
 from pathlib import Path
+from typing import Optional
 from praw.models import Comment
 
 import requests
@@ -17,7 +18,7 @@ fmt = "%(asctime)s %(levelname)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=fmt)
 
 
-def submit_replay(replay_file: Path, skin: int = 3) -> str:
+def submit_replay(replay_file: Path, skin: int = 3) -> Optional[str]:
     multipart_form_data = {
         "replayFile": ("replay.osr", replay_file.open("rb")),
         "username": (None, "osu-bot"),
@@ -29,7 +30,7 @@ def submit_replay(replay_file: Path, skin: int = 3) -> str:
         "https://apis.issou.best/ordr/renders", files=multipart_form_data
     )
     resp_json = resp.json()
-    return resp_json["renderID"] if "renderID" in resp_json.keys() else None
+    return str(resp_json["renderID"]) if "renderID" in resp_json.keys() else None
 
 
 def delete_replay(replay_file: Path) -> None:

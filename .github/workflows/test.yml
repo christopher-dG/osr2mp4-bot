@@ -1,0 +1,39 @@
+name: Run Tests
+on:
+  - push
+  - pull_request
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - run: pip install -r requirements.txt black flake8 mypy pytest-cov
+      - run: ./bin/test.sh
+        env:
+          OSU_USERNAME: ${{ secrets.OSU_USERNAME }}
+          OSU_PASSWORD: ${{ secrets.OSU_PASSWORD }}
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          cat > .env <<EOF
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          OSU_API_KEY=${{ secrets.OSU_API_KEY }}
+          OSU_USERNAME=${{ secrets.OSU_USERNAME }}
+          OSU_PASSWORD=${{ secrets.OSU_PASSWORD }}
+          REDDIT_CLIENT_ID=${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USERNAME=${{ secrets.REDDIT_USERNAME }}
+          REDDIT_PASSWORD=${{ secrets.REDDIT_PASSWORD }}
+          REDDIT_USER_AGENT=${{ secrets.REDDIT_USER_AGENT }}
+          S3_BUCKET=${{ secrets.S3_BUCKET }}
+          STREAMABLE_USERNAME=${{ secrets.STREAMABLE_USERNAME }}
+          STREAMABLE_PASSWORD=${{ secrets.STREAMABLE_PASSWORD }}
+          ORDR_API_KEY=${{ secrets.ORDR_API_KEY }}
+          EOF
+      - run: ./bin/test.sh docker
