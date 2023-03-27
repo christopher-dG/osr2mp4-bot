@@ -1,7 +1,7 @@
 boto3==1.16.13
 osuapi==0.0.42
 praw==7.1.0
-redis==3.5.3
+redis==4.5.3
 requests==2.24
 rq==1.6.1
 sentry-sdk==0.19.1
