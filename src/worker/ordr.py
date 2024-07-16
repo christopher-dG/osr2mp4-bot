@@ -21,16 +21,36 @@ fmt = "%(asctime)s %(levelname)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=fmt)
 
 
-def submit_replay(replay_file: Path, skin: int = 3) -> Optional[str]:
+def submit_replay(replay_file: Path, mods: int) -> Optional[str]:
     multipart_form_data = {
-        "replayFile": ("replay.osr", replay_file.open("rb")),
-        "username": (None, "osu-bot"),
-        "resolution": (None, "1280x720"),
-        "skin": (None, skin),
-        "verificationKey": (None, ORDR_API_KEY),
+        "replayFile": ("replay.osr", replay_file.open("rb"))
     }
+
+    skin = 21042 # normal skin
+
+    if mods & 2: # EZ mod
+        skin = 21043
+    elif mods & 64 or mods & 512: # DT or NC mods
+        skin = 21045
+
+    config = {
+        "username": "u/osu-bot",
+        "resolution": "1280x720",
+        "customSkin": "true",
+        "skin": skin,
+        "inGameBGDim": "90",
+        "showHitCounter": "true",
+        "showAimErrorMeter": "true",
+        "showScoreboard": "true",
+        "showStrainGraph": "true",
+        "showSliderBreaks": "true",
+        "useBeatmapColors": "false",
+        "useSkinColors": "true",
+        "verificationKey": f"{ORDR_API_KEY}",
+    }
+
     resp = requests.post(
-        "https://apis.issou.best/ordr/renders", files=multipart_form_data
+        "https://apis.issou.best/ordr/renders", files=multipart_form_data, data=config
     )
     resp_json = resp.json()
     return str(resp_json["renderID"]) if "renderID" in resp_json.keys() else None

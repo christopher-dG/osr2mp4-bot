@@ -28,7 +28,7 @@ def job(comment: Comment) -> None:
     logging.info(f"Processing comment {comment.id} on {sub.id}: {sub.title}")
     logging.info(f"Triggered by: /u/{comment.author}")
     try:
-        mapset, score, title = parse_comment(comment)
+        mapset, score, title, mods = parse_comment(comment)
         video_url = get_video(score)
         if video_url:
             logging.info(f"Found video in cache ({video_url})")
@@ -39,7 +39,7 @@ def job(comment: Comment) -> None:
             replay_path = download_replay(score)
             logging.info(f"Replay downloaded to {replay_path}")
             logging.info("Submitting Replay to o!rdr...")
-            render_id = submit_replay(replay_path)
+            render_id = submit_replay(replay_path, mods)
             if not render_id:
                 raise ReplyWith("o!rdr replay rendering failed, no render id")
             set_active_render(render_id)

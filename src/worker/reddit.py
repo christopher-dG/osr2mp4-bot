@@ -46,7 +46,7 @@ def parse_comment(comment: Comment) -> Tuple[int, int, str]:
     mapset, beatmap, player, mods = _parse_osubot_comment(comment.body)
     score = _score_id(beatmap, player, mods)
     title = comment.submission.title
-    return mapset, score, title
+    return mapset, score, title, mods
 
 
 def success(comment: Comment, url: str) -> None:
