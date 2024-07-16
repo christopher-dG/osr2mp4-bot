@@ -6,6 +6,9 @@ from typing import Optional, cast
 
 from redis import Redis
 
+from dotenv import load_dotenv
+load_dotenv()
+
 JOB_TIMEOUT = int(os.getenv("JOB_TIMEOUT", "3600"))
 PREFIX = "video"
 PROGRESS = "progress"

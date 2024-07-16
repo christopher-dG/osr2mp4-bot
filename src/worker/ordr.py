@@ -13,6 +13,9 @@ from src.worker import ReplyWith
 from src.worker.cache import get_render_id, set_video, set_video_progress
 from src.worker.reddit import success
 
+from dotenv import load_dotenv
+load_dotenv()
+
 ORDR_API_KEY = os.environ.get("ORDR_API_KEY", "")
 fmt = "%(asctime)s %(levelname)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=fmt)

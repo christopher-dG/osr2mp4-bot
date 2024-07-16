@@ -11,6 +11,9 @@ from praw.models import Comment
 from . import ReplyWith
 from ..common import is_osubot_comment
 
+from dotenv import load_dotenv
+load_dotenv()
+
 LINK_TEXT = "Video replay"
 OSU_API = OsuApi(os.environ.get("OSU_API_KEY", ""), connector=ReqConnector())
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")

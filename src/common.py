@@ -7,6 +7,9 @@ from praw.models import Comment
 from redis import Redis
 from rq import Queue
 
+from dotenv import load_dotenv
+load_dotenv()
+
 QUEUE = Queue(
     connection=Redis(os.getenv("REDIS_HOST", "localhost")),
     default_timeout=int(os.getenv("JOB_TIMEOUT", "1800")),

@@ -7,6 +7,8 @@ from requests import Session
 
 from . import ReplyWith
 
+from dotenv import load_dotenv
+load_dotenv()
 
 def download_replay(score: int) -> Path:
     """Download the replay for `score`, returning its path."""

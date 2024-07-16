@@ -8,6 +8,9 @@ from praw.models import Comment
 from .worker import job
 from .common import enqueue, is_osubot_comment
 
+from dotenv import load_dotenv
+load_dotenv()
+
 REDDIT = Reddit(
     client_id=os.environ.get("REDDIT_CLIENT_ID", ""),
     client_secret=os.environ.get("REDDIT_CLIENT_SECRET", ""),
@@ -30,4 +33,5 @@ def _stream() -> Iterable[Comment]:
 
 def main() -> None:
     for comment in _stream():
+        print(comment)
         enqueue(job, comment)

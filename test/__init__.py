@@ -2,6 +2,8 @@ import os
 
 from unittest.mock import Mock
 
+from dotenv import load_dotenv
+load_dotenv()
 
 def mock_with_name(name):
     m = Mock()
