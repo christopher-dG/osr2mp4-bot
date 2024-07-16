@@ -14,7 +14,7 @@ from ..common import is_osubot_comment
 from dotenv import load_dotenv
 load_dotenv()
 
-LINK_TEXT = "Video replay"
+LINK_TEXT = "Video replay of this score"
 OSU_API = OsuApi(os.environ.get("OSU_API_KEY", ""), connector=ReqConnector())
 RE_BEATMAP = re.compile(r"osu\.ppy\.sh/b/(\d+)")
 RE_PLAYER = re.compile(r"osu\.ppy\.sh/u/(\d+)")
@@ -177,5 +177,5 @@ def _edit_osubot_comment(comment: Comment, url: str) -> None:
             logging.info(f"Duplicate video should be deleted: {url}")
         return
     lines = comment.body.splitlines()
-    lines.insert(lines.index("***"), f"[{LINK_TEXT}]({url})\n")
+    lines.insert(0, f"[{LINK_TEXT}]({url})\n")
     comment.edit("\n".join(lines))
