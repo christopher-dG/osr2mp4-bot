@@ -195,7 +195,7 @@ def test_edit_osubot_comment(find_osubot_comment, info):
     comment = Mock(body=before)
 
     def add_to_body():
-        comment.body += "[Streamable replay](A)"
+        comment.body += "[Video replay](A)"
 
     comment.refresh = add_to_body
     reddit._edit_osubot_comment(comment, "A")
@@ -208,4 +208,4 @@ def test_edit_osubot_comment(find_osubot_comment, info):
     comment.body = before
     comment.refresh = lambda: None
     reddit._edit_osubot_comment(comment, "C")
-    comment.edit.assert_called_with("a\n\nb\n\n[Streamable replay](C)\n\n***\n\nc")
+    comment.edit.assert_called_with("a\n\nb\n\n[Video replay](C)\n\n***\n\nc")
