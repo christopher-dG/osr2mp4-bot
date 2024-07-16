@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from tempfile import mkstemp
 
-from requests import Session
+import requests
 
 from . import ReplyWith
 
@@ -21,13 +21,13 @@ def download_replay(score: int) -> Path:
 
 def _download(url: str) -> bytes:
     """Download something from osu!web at `url`, returning the file contents."""
-    with _login() as sess:
-        resp = sess.get(f"{url}/download", headers={"Referer": url})
+    download_url = f"{url}/download"
+    resp = requests.get(download_url, headers={"Referer": url, "Cookie": os.environ.get("OSU_COOKIE")})
     if not resp.ok:
-        raise ReplyWith("Sorry, a download failed.")
+        raise ReplyWith(f"Sorry, a download failed at {download_url}.")
     return resp.content
 
-
+'''
 def _login() -> Session:
     """Get a `Session` that's logged into osu!web."""
     # Technique comes from: https://github.com/TheBicPen/osu-lazer-bot.
@@ -46,3 +46,4 @@ def _login() -> Session:
     if resp.status_code == 302:
         return sess
     raise ReplyWith("Sorry, I couldn't log into osu!web.")
+'''

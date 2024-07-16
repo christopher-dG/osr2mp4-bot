@@ -1,3 +1,4 @@
+import logging
 import os
 
 from typing import Iterable
@@ -33,5 +34,5 @@ def _stream() -> Iterable[Comment]:
 
 def main() -> None:
     for comment in _stream():
-        print(comment)
+        logging.info(f"Enqueueing comment id {comment}")
         enqueue(job, comment)

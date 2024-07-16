@@ -161,6 +161,7 @@ def _score_id(beatmap: int, player: int, mods: int) -> int:
     score = scores[0]
     if not score.replay_available:
         raise ReplyWith("Sorry, the replay is not available for download.")
+    logging.info(f"Found score id {score.score_id}")
     return cast(int, score.score_id)
 
 
