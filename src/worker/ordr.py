@@ -53,7 +53,10 @@ def submit_replay(replay_file: Path, mods: int) -> Optional[str]:
         "https://apis.issou.best/ordr/renders", files=multipart_form_data, data=config
     )
     resp_json = resp.json()
-    return str(resp_json["renderID"]) if "renderID" in resp_json.keys() else None
+
+    render_info = f"renderID: {resp_json['renderID']} - errorCode: {resp_json['errorCode']} - message: {resp_json['message']}" if "errorCode" in resp_json.keys() else None
+    render_id = str(resp_json["renderID"]) if "renderID" in resp_json.keys() else None
+    return render_info, render_id
 
 
 def delete_replay(replay_file: Path) -> None:

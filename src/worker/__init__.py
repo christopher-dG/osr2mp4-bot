@@ -39,12 +39,12 @@ def job(comment: Comment) -> None:
             replay_path = download_replay(score)
             logging.info(f"Replay downloaded to {replay_path}")
             logging.info("Submitting Replay to o!rdr...")
-            render_id = submit_replay(replay_path, mods)
-            if not render_id:
+            render_info, render_id = submit_replay(replay_path, mods)
+            if not render_info:
                 raise ReplyWith("o!rdr replay rendering failed, no render id")
             set_active_render(render_id)
             logging.info(
-                f"Replay submitted to o!rdr ({render_id}) - waiting for video url"
+                f"Replay submitted to o!rdr ({render_info}) - waiting for video url"
             )
             wait_and_set_video_url(score, render_id, comment)
             delete_replay(replay_path)
