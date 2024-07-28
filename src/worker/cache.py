@@ -18,7 +18,7 @@ REDIS = Redis(os.getenv("REDIS_HOST", "localhost"))
 
 def get_video(score: int) -> Optional[str]:
     """Get the URL to a previously uploaded video of `score`."""
-    _wait(score)
+    # _wait(score)
     val = cast(Optional[bytes], REDIS.get(f"{PREFIX}:{score}"))
     return val.decode() if val else None
 
