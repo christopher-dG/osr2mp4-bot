@@ -177,5 +177,5 @@ def _edit_osubot_comment(comment: Comment, url: str) -> None:
             logging.info(f"Duplicate video should be deleted: {url}")
         return
     lines = comment.body.splitlines()
-    lines.insert(0, f"[{LINK_TEXT}]({url})\n")
+    lines.insert(0, f"# **[{LINK_TEXT}]({url})**\n")
     comment.edit("\n".join(lines))
