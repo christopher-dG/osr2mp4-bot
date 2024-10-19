@@ -35,11 +35,11 @@ def job(comment: Comment) -> None:
             success(comment, video_url)
         else:
             set_video_progress(score, True)
-            logging.info("Downloading replay...")
-            replay_path = download_replay(score)
-            logging.info(f"Replay downloaded to {replay_path}")
+            # logging.info("Downloading replay...")
+            # replay_path = download_replay(score)
+            # logging.info(f"Replay downloaded to {replay_path}")
             logging.info("Submitting Replay to o!rdr...")
-            render_info, render_id = submit_replay(replay_path, mods)
+            render_info, render_id = submit_replay(score, mods)
             if not render_info:
                 raise ReplyWith("o!rdr replay rendering failed, no render id")
             set_active_render(render_id)
@@ -47,7 +47,7 @@ def job(comment: Comment) -> None:
                 f"Replay submitted to o!rdr ({render_info}) - waiting for video url"
             )
             wait_and_set_video_url(score, render_id, comment)
-            delete_replay(replay_path)
+            # delete_replay(replay_path)
     except ReplyWith as e:
         if is_osubot_comment(comment):
             logging.warning(e.msg)

@@ -21,19 +21,19 @@ fmt = "%(asctime)s %(levelname)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=fmt)
 
 
-def submit_replay(replay_file: Path, mods: int) -> Optional[str]:
+def submit_replay(score: int, mods: int) -> Optional[str]:
     multipart_form_data = {
-        "replayFile": ("replay.osr", replay_file.open("rb"))
+        # "replayFile": ("replay.osr", replay_file.open("rb"))
     }
 
-    skin = 21042 # normal skin
-
+    skin = os.environ.get("ORDR_NOMOD_SKIN") # normal skin
     if mods & 2: # EZ mod
-        skin = 21043
+        skin = os.environ.get("ORDR_EZ_SKIN")
     elif mods & 64 or mods & 512: # DT or NC mods
-        skin = 21045
+        skin = os.environ.get("ORDR_DT_SKIN")
 
     config = {
+        "replayScoreId": f"{score}",
         "username": "u/osu-bot",
         "resolution": "1280x720",
         "customSkin": "true",
@@ -50,7 +50,7 @@ def submit_replay(replay_file: Path, mods: int) -> Optional[str]:
     }
 
     resp = requests.post(
-        "https://apis.issou.best/ordr/renders", files=multipart_form_data, data=config
+        os.environ.get("ORDR_RENDERS_URL"), files=multipart_form_data, data=config
     )
     resp_json = resp.json()
 

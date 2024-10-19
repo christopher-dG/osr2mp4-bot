@@ -1,11 +1,15 @@
 from typing import Any
 import socketio
 import logging
+import os
 
 from src.worker.cache import is_render_active, set_render_id
 
 fmt = "%(asctime)s %(levelname)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=fmt)
+
+from dotenv import load_dotenv
+load_dotenv()
 
 sio = socketio.Client(reconnection=True)
 
@@ -40,5 +44,5 @@ def on_render_failed(data: Any) -> None:
         )
 
 def main() -> None:
-    sio.connect("https://apis.issou.best", socketio_path="/ordr/ws")
+    sio.connect(os.environ.get("ORDR_WEBSOCKET_URL"), socketio_path="/ordr/ws")
     sio.wait()
