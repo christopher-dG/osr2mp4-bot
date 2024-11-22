@@ -35,7 +35,7 @@ def submit_replay(score: int, mods: int) -> Optional[str]:
     config = {
         "replayScoreId": f"{score}",
         "username": "u/osu-bot",
-        "resolution": "1280x720",
+        "resolution": "1920x1080",
         "customSkin": "true",
         "skin": skin,
         "inGameBGDim": "90",
